@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>木铎笔记 GitHub 协作管理手册｜分组负责人版</title>
+<style>
+  :root{
+    --bg:#f6f8fb;
+    --card:#ffffff;
+    --ink:#1f2937;
+    --muted:#6b7280;
+    --line:#d8dee9;
+    --blue:#2563eb;
+    --green:#16a34a;
+    --orange:#ea580c;
+    --red:#dc2626;
+    --purple:#7c3aed;
+    --cyan:#0891b2;
+    --code:#111827;
+    --code-bg:#f3f4f6;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.75;
+  }
+  header{
+    background:linear-gradient(135deg,#111827,#1d4ed8);
+    color:white;
+    padding:46px 7vw 38px;
+  }
+  header h1{margin:0 0 10px;font-size:34px}
+  header p{margin:0;color:#dbeafe;font-size:17px}
+  main{max-width:1220px;margin:0 auto;padding:28px 22px 80px}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:24px;
+    margin-bottom:18px;
+    box-shadow:0 8px 28px rgba(15,23,42,.05);
+  }
+  h2{margin:0 0 14px;font-size:25px}
+  h3{margin:22px 0 8px;font-size:19px}
+  h4{margin:16px 0 6px;font-size:16px}
+  p{margin:8px 0}
+  a{color:var(--blue)}
+  .tag{
+    display:inline-block;
+    padding:3px 9px;
+    border-radius:999px;
+    font-size:13px;
+    background:#eef2ff;
+    color:#3730a3;
+    margin:2px 4px 2px 0;
+    font-weight:700;
+  }
+  .ok{background:#dcfce7;color:#166534}
+  .warn{background:#ffedd5;color:#9a3412}
+  .danger{background:#fee2e2;color:#991b1b}
+  .owner{background:#ede9fe;color:#5b21b6}
+  .leader{background:#e0f2fe;color:#075985}
+  .member{background:#f0fdf4;color:#166534}
+  pre{
+    background:var(--code-bg);
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    padding:14px 16px;
+    overflow:auto;
+    color:var(--code);
+    font-size:14px;
+    line-height:1.55;
+  }
+  code{font-family:Consolas,Menlo,Monaco,monospace}
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+    font-size:14px;
+  }
+  th,td{
+    border:1px solid var(--line);
+    padding:10px;
+    vertical-align:top;
+  }
+  th{background:#f1f5f9;text-align:left}
+  .toc a{
+    display:inline-block;
+    margin:4px 8px 4px 0;
+    padding:7px 10px;
+    background:#f8fafc;
+    border:1px solid var(--line);
+    border-radius:999px;
+    text-decoration:none;
+    color:var(--blue);
+  }
+  .flow{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px;
+    margin:18px 0 10px;
+  }
+  .node{
+    border:2px solid var(--line);
+    background:white;
+    border-radius:14px;
+    padding:12px 14px;
+    min-width:142px;
+    text-align:center;
+    font-weight:800;
+  }
+  .node.main{border-color:var(--blue);color:var(--blue)}
+  .node.owner{border-color:var(--purple);color:var(--purple)}
+  .node.leader{border-color:var(--cyan);color:var(--cyan)}
+  .node.member{border-color:var(--green);color:var(--green)}
+  .node.pr{border-color:var(--orange);color:var(--orange)}
+  .node.merge{border-color:var(--red);color:var(--red)}
+  .arrow{font-size:24px;color:#64748b}
+  .lane{
+    display:grid;
+    grid-template-columns:210px 1fr;
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+    margin:12px 0;
+  }
+  .lane .role{
+    background:#f1f5f9;
+    padding:16px;
+    font-weight:900;
+  }
+  .lane .steps{padding:16px;background:white}
+  .note{
+    border-left:5px solid var(--blue);
+    background:#eff6ff;
+    padding:12px 14px;
+    border-radius:10px;
+    margin:12px 0;
+  }
+  .warning{
+    border-left:5px solid var(--orange);
+    background:#fff7ed;
+    padding:12px 14px;
+    border-radius:10px;
+    margin:12px 0;
+  }
+  .dangerbox{
+    border-left:5px solid var(--red);
+    background:#fef2f2;
+    padding:12px 14px;
+    border-radius:10px;
+    margin:12px 0;
+  }
+  .two-col{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  .small{font-size:13px;color:var(--muted)}
+  .kbd{
+    display:inline-block;
+    border:1px solid #cbd5e1;
+    background:#f8fafc;
+    border-radius:6px;
+    padding:0 6px;
+    font-family:Consolas,Menlo,Monaco,monospace;
+  }
+  @media(max-width:900px){
+    .lane{grid-template-columns:1fr}
+    .two-col{grid-template-columns:1fr}
+    header h1{font-size:28px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>木铎笔记 GitHub 协作管理手册</h1>
+  <p>分组负责人版：组员提交到组长分支，组长合并小组成员改动，总负责人窦思颖统一审核各组长分支并合并到 main。</p>
+</header>
+
+<main>
+  <section class="card toc">
+    <h2>目录</h2>
+    <a href="#roles">1. 成员与分支安排</a>
+    <a href="#principle">2. 协作原则</a>
+    <a href="#visual">3. 可视化流程</a>
+    <a href="#pr-note">4. push 和 Pull Request 的区别</a>
+    <a href="#owner">5. 总负责人操作流程</a>
+    <a href="#leaders">6. 各小组组长操作流程</a>
+    <a href="#members">7. 小组成员操作流程</a>
+    <a href="#commands">8. 命令详解</a>
+    <a href="#review">9. 审核清单</a>
+    <a href="#problems">10. 常见问题</a>
+  </section>
+
+  <section id="roles" class="card">
+    <h2>1. 成员与分支安排</h2>
+    <p>为了减少混乱，建议分支名统一使用英文或拼音，避免中文分支名在终端、脚本或 GitHub Actions 中出现兼容问题。</p>
+
+    <h3>1.1 总负责人</h3>
+    <table>
+      <tr><th>角色</th><th>姓名</th><th>主要分支</th><th>职责</th></tr>
+      <tr>
+        <td>总负责人</td>
+        <td>窦思颖</td>
+        <td><code>main</code></td>
+        <td>维护稳定主分支；审核各组长分支提交的 Pull Request；决定是否合并到 <code>main</code>。</td>
+      </tr>
+    </table>
+
+    <h3>1.2 小组与推荐分支名</h3>
+    <table>
+      <tr><th>小组</th><th>成员</th><th>推荐个人分支</th><th>组长整合分支</th></tr>
+      <tr>
+        <td>小组1</td>
+        <td>
+          马天一（组长）<br/>
+          朱佑铭<br/>
+          刘玉健
+        </td>
+        <td>
+          马天一：<code>g1-mty</code><br/>
+          朱佑铭：<code>g1-zym</code><br/>
+          刘玉健：<code>g1-lyj</code>
+        </td>
+        <td><code>leader-g1-mty</code></td>
+      </tr>
+      <tr>
+        <td>小组2</td>
+        <td>
+          李益行（组长）<br/>
+          孙赫明<br/>
+          周佳辛
+        </td>
+        <td>
+          李益行：<code>g2-lyx</code><br/>
+          孙赫明：<code>g2-shm</code><br/>
+          周佳辛：<code>g2-zjx</code>
+        </td>
+        <td><code>leader-g2-lyx</code></td>
+      </tr>
+      <tr>
+        <td>小组3</td>
+        <td>
+          马天一（组长）<br/>
+          任思睿<br/>
+          吴晨阳<br/>
+          刘宇童<br/>
+          李兆一
+        </td>
+        <td>
+          马天一：<code>g3-mty</code><br/>
+          任思睿：<code>g3-rsr</code><br/>
+          吴晨阳：<code>g3-wcy</code><br/>
+          刘宇童：<code>g3-lyt</code><br/>
+          李兆一：<code>g3-lzy</code>
+        </td>
+        <td><code>leader-g3-mty</code></td>
+      </tr>
+    </table>
+
+    <div class="note">
+      <strong>马天一有两个组长整合分支：</strong><code>leader-g1-mty</code> 对应小组1，<code>leader-g3-mty</code> 对应小组3。这样可以避免两个小组的任务混在同一个分支里。
+    </div>
+
+    <h3>1.3 推荐的合并方向</h3>
+    <pre><code>小组成员个人分支  →  本组组长整合分支  →  main
+
+例如：
+g1-zym       →  leader-g1-mty  →  main
+g1-lyj       →  leader-g1-mty  →  main
+g2-shm       →  leader-g2-lyx  →  main
+g3-wcy       →  leader-g3-mty  →  main</code></pre>
+  </section>
+
+  <section id="principle" class="card">
+    <h2>2. 协作原则</h2>
+    <p>
+      <span class="tag ok">main 只放稳定版本</span>
+      <span class="tag leader">组长负责整合本组代码</span>
+      <span class="tag member">组员只推送到自己的个人分支</span>
+      <span class="tag owner">窦思颖审核组长分支</span>
+      <span class="tag warn">合并必须走 Pull Request</span>
+    </p>
+
+    <table>
+      <tr><th>角色</th><th>可以直接 push 到哪里</th><th>应该向哪里发 Pull Request</th><th>不建议做什么</th></tr>
+      <tr>
+        <td>普通组员</td>
+        <td>自己的个人分支，例如 <code>g1-zym</code></td>
+        <td>本组组长整合分支，例如 <code>leader-g1-mty</code></td>
+        <td>不要直接 push 到 <code>main</code>；不要直接合并到其他小组分支。</td>
+      </tr>
+      <tr>
+        <td>小组组长</td>
+        <td>自己的组长整合分支，例如 <code>leader-g1-mty</code></td>
+        <td><code>main</code></td>
+        <td>不要绕过 PR 直接改 <code>main</code>。</td>
+      </tr>
+      <tr>
+        <td>总负责人窦思颖</td>
+        <td><code>main</code>，以及必要时维护各组长分支</td>
+        <td>通常不需要向别人发 PR</td>
+        <td>不要在没有审核 Files changed 的情况下合并。</td>
+      </tr>
+    </table>
+
+    <div class="warning">
+      <strong>所有成员必须自觉遵守：
+不要直接 push 到 main；
+提交后必须在 GitHub 上创建 Pull Request；
+没有 PR 的提交不会被视为正式提交。</strong>    </div>
+  </section>
+
+  <section id="visual" class="card">
+    <h2>3. 可视化流程</h2>
+
+    <h3>3.1 普通组员到组长分支</h3>
+    <div class="flow">
+      <div class="node member">组员个人分支<br/>g1-zym</div>
+      <div class="arrow">→</div>
+      <div class="node pr">GitHub 创建 PR<br/>g1-zym → leader-g1-mty</div>
+      <div class="arrow">→</div>
+      <div class="node leader">组长马天一审核<br/>Merge</div>
+      <div class="arrow">→</div>
+      <div class="node leader">leader-g1-mty<br/>更新</div>
+    </div>
+
+    <h3>3.2 组长分支到 main</h3>
+    <div class="flow">
+      <div class="node leader">leader-g1-mty<br/>小组1整合结果</div>
+      <div class="arrow">→</div>
+      <div class="node pr">GitHub 创建 PR<br/>leader-g1-mty → main</div>
+      <div class="arrow">→</div>
+      <div class="node owner">窦思颖审核<br/>Files changed</div>
+      <div class="arrow">→</div>
+      <div class="node merge">Merge pull request</div>
+      <div class="arrow">→</div>
+      <div class="node main">main<br/>稳定版本更新</div>
+    </div>
+
+    <h3>3.3 整体分支图</h3>
+    <pre><code>main
+ ├─ leader-g1-mty
+ │   ├─ g1-mty
+ │   ├─ g1-zym
+ │   └─ g1-lyj
+ │
+ ├─ leader-g2-lyx
+ │   ├─ g2-lyx
+ │   ├─ g2-shm
+ │   └─ g2-zjx
+ │
+ └─ leader-g3-mty
+     ├─ g3-mty
+     ├─ g3-rsr
+     ├─ g3-wcy
+     ├─ g3-lyt
+     └─ g3-lzy</code></pre>
+  </section>
+
+  <section id="pr-note" class="card">
+    <h2>4. 重要：git push 和 Pull Request 不是一回事</h2>
+    <div class="dangerbox">
+      <strong>结论：</strong><code>git push</code> 只表示“把本地提交上传到 GitHub 的某个分支”。它不会自动创建 Pull Request，也不会自动合并到目标分支。
+    </div>
+
+    <table>
+      <tr><th>操作</th><th>在哪里做</th><th>作用</th><th>是否会让 PR 页面出现记录</th></tr>
+      <tr>
+        <td><code>git push</code></td>
+        <td>本地终端 / VS Code 终端</td>
+        <td>把本地分支提交上传到 GitHub 对应分支</td>
+        <td>不会自动创建 PR。最多 GitHub 首页出现 “recent pushes” 提醒。</td>
+      </tr>
+      <tr>
+        <td>Create pull request</td>
+        <td>GitHub 网站 Pull requests 页面</td>
+        <td>正式发起“把某分支合并到目标分支”的审核请求</td>
+        <td>会。PR 页面会出现一条 Open Pull Request。</td>
+      </tr>
+      <tr>
+        <td>Merge pull request</td>
+        <td>GitHub 网站 PR 页面</td>
+        <td>审核通过后，把 compare 分支合并到 base 分支</td>
+        <td>会。PR 变成 Merged / Closed。</td>
+      </tr>
+    </table>
+
+    <h3>如果有人说“我已经提交了”，需要追问两件事</h3>
+    <ol>
+      <li>你是否已经执行了 <code>git push</code>？如果没有，代码还只在你自己电脑上。</li>
+      <li>你是否已经在 GitHub 网站创建了 Pull Request？如果没有，负责人或组长在 PR 页面看不到审核请求。</li>
+    </ol>
+
+    <h3>正确提交链路</h3>
+    <pre><code>本地修改代码
+  ↓
+git add .
+  ↓
+git commit -m "说明"
+  ↓
+git push
+  ↓
+打开 GitHub 网站
+  ↓
+Compare & pull request
+  ↓
+确认 base 和 compare
+  ↓
+Create pull request
+  ↓
+等待组长 / 总负责人审核</code></pre>
+  </section>
+
+  <section id="owner" class="card">
+    <h2>5. 总负责人窦思颖操作流程</h2>
+
+    <div class="lane">
+      <div class="role">5.1 初始化分支</div>
+      <div class="steps">
+        <p>如果这些分支还没有建立，可以由总负责人从最新 <code>main</code> 创建。</p>
+        <pre><code>git checkout main
+git pull origin main
+
+# 小组1
+git checkout -b leader-g1-mty
+git push -u origin leader-g1-mty
+git checkout main
+git checkout -b g1-mty
+git push -u origin g1-mty
+git checkout main
+git checkout -b g1-zym
+git push -u origin g1-zym
+git checkout main
+git checkout -b g1-lyj
+git push -u origin g1-lyj
+
+# 小组2
+git checkout main
+git checkout -b leader-g2-lyx
+git push -u origin leader-g2-lyx
+git checkout main
+git checkout -b g2-lyx
+git push -u origin g2-lyx
+git checkout main
+git checkout -b g2-shm
+git push -u origin g2-shm
+git checkout main
+git checkout -b g2-zjx
+git push -u origin g2-zjx
+
+# 小组3
+git checkout main
+git checkout -b leader-g3-mty
+git push -u origin leader-g3-mty
+git checkout main
+git checkout -b g3-mty
+git push -u origin g3-mty
+git checkout main
+git checkout -b g3-rsr
+git push -u origin g3-rsr
+git checkout main
+git checkout -b g3-wcy
+git push -u origin g3-wcy
+git checkout main
+git checkout -b g3-lyt
+git push -u origin g3-lyt
+git checkout main
+git checkout -b g3-lzy
+git push -u origin g3-lzy
+
+git checkout main</code></pre>
+        <p class="small">如果分支已经存在，不需要重复创建。</p>
+      </div>
+    </div>
+
+    <div class="lane">
+      <div class="role">5.2 每次审核前</div>
+      <div class="steps">
+        <p>先更新本地对 GitHub 的认知。</p>
+        <pre><code>git checkout main
+git pull origin main
+git fetch origin
+git status</code></pre>
+        <p>理想状态：</p>
+        <pre><code>On branch main
+Your branch is up to date with 'origin/main'.
+nothing to commit, working tree clean</code></pre>
+      </div>
+    </div>
+
+    <div class="lane">
+      <div class="role">5.3 本地预审组长分支</div>
+      <div class="steps">
+        <p>以小组1组长分支为例，查看它相对 <code>main</code> 多了哪些提交、改了哪些文件。</p>
+        <pre><code># 看 leader-g1-mty 比 main 多了哪些提交
+git log --oneline origin/main..origin/leader-g1-mty
+
+# 看改了哪些文件
+git diff --name-status origin/main..origin/leader-g1-mty
+
+# 看具体改动
+git diff origin/main..origin/leader-g1-mty</code></pre>
+        <p>审核小组2或小组3时，把分支名换成：</p>
+        <pre><code>origin/leader-g2-lyx
+origin/leader-g3-mty</code></pre>
+      </div>
+    </div>
+
+    <div class="lane">
+      <div class="role">5.4 GitHub 上审核并合并</div>
+      <div class="steps">
+        <ol>
+          <li>打开 GitHub 仓库 → Pull requests。</li>
+          <li>打开组长提交的 PR。</li>
+          <li>确认方向正确：
+            <pre><code>base: main
+compare: leader-g1-mty / leader-g2-lyx / leader-g3-mty</code></pre>
+          </li>
+          <li>点击 Files changed 审核具体代码。</li>
+          <li>确认无问题后点击 <strong>Merge pull request</strong>。</li>
+          <li>合并后同步本地 <code>main</code>。</li>
+        </ol>
+        <pre><code>git checkout main
+git pull origin main</code></pre>
+        <div class="warning">
+          组长分支是长期整合分支，合并后通常不要删除 <code>leader-g1-mty</code>、<code>leader-g2-lyx</code>、<code>leader-g3-mty</code>。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="leaders" class="card">
+    <h2>6. 各小组组长操作流程</h2>
+
+    <h3>6.1 组长分支对应关系</h3>
+    <table>
+      <tr><th>组长</th><th>管理小组</th><th>组长整合分支</th><th>接收哪些成员 PR</th></tr>
+      <tr>
+        <td>马天一</td>
+        <td>小组1</td>
+        <td><code>leader-g1-mty</code></td>
+        <td><code>g1-mty</code>、<code>g1-zym</code>、<code>g1-lyj</code></td>
+      </tr>
+      <tr>
+        <td>李益行</td>
+        <td>小组2</td>
+        <td><code>leader-g2-lyx</code></td>
+        <td><code>g2-lyx</code>、<code>g2-shm</code>、<code>g2-zjx</code></td>
+      </tr>
+      <tr>
+        <td>马天一</td>
+        <td>小组3</td>
+        <td><code>leader-g3-mty</code></td>
+        <td><code>g3-mty</code>、<code>g3-rsr</code>、<code>g3-wcy</code>、<code>g3-lyt</code>、<code>g3-lzy</code></td>
+      </tr>
+    </table>
+
+    <div class="lane">
+      <div class="role">6.2 组长每天开始前</div>
+      <div class="steps">
+        <p>以小组1马天一为例：</p>
+        <pre><code>git fetch origin
+git checkout leader-g1-mty
+git merge origin/main
+git push</code></pre>
+        <p>这一步的意思是：先让组长整合分支吸收最新 <code>main</code>，后续合并组员代码时更不容易冲突。</p>
+      </div>
+    </div>
+
+    <div class="lane">
+      <div class="role">6.3 组长审核组员 PR</div>
+      <div class="steps">
+        <p>组员在 GitHub 上创建 PR，例如：</p>
+        <pre><code>base: leader-g1-mty
+compare: g1-zym</code></pre>
+        <p>组长需要在 GitHub 的 PR 页面：</p>
+        <ol>
+          <li>确认 PR 方向是不是合到本组组长分支。</li>
+          <li>点击 Files changed 看改动。</li>
+          <li>确认没有敏感文件、无关文件和明显错误。</li>
+          <li>点击 Merge pull request。</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="lane">
+      <div class="role">6.4 组长提交给总负责人</div>
+      <div class="steps">
+        <p>当本组阶段性任务完成后，组长在 GitHub 上创建 PR 给总负责人审核。</p>
+        <pre><code>小组1：
+base: main
+compare: leader-g1-mty
+
+小组2：
+base: main
+compare: leader-g2-lyx
+
+小组3：
+base: main
+compare: leader-g3-mty</code></pre>
+        <p>PR 描述建议写清楚：</p>
+        <ul>
+          <li>本组完成了哪些任务；</li>
+          <li>涉及哪些前端/后端/文档模块；</li>
+          <li>是否需要安装新依赖；</li>
+          <li>是否已经本地运行或自测。</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>6.5 马天一同时管理两个小组时的注意事项</h3>
+    <div class="warning">
+      马天一需要特别注意当前分支，避免把小组1代码提交到小组3分支，或者把小组3代码提交到小组1分支。
+    </div>
+    <pre><code># 做小组1相关工作前
+git checkout leader-g1-mty
+git status
+
+# 做小组3相关工作前
+git checkout leader-g3-mty
+git status</code></pre>
+  </section>
+
+  <section id="members" class="card">
+    <h2>7. 小组成员操作流程</h2>
+
+    <h3>7.1 第一次参与项目</h3>
+    <p>以朱佑铭为例，他使用 <code>g1-zym</code> 分支：</p>
+    <pre><code>git clone https://github.com/dousiying/Muduo-notes-v1.git
+cd Muduo-notes-v1
+
+git fetch origin
+git checkout -b g1-zym origin/g1-zym
+git status</code></pre>
+    <p>预期输出：</p>
+    <pre><code>Switched to a new branch 'g1-zym'
+On branch g1-zym
+Your branch is up to date with 'origin/g1-zym'.</code></pre>
+
+    <h3>7.2 每次开发前</h3>
+    <p>开发前先进入自己的分支，并同步本组组长分支，减少冲突。</p>
+    <pre><code># 以朱佑铭为例
+git checkout g1-zym
+git fetch origin
+git merge origin/leader-g1-mty
+git status</code></pre>
+    <p>其他成员替换对应分支：</p>
+    <table>
+      <tr><th>成员</th><th>进入自己的分支</th><th>同步哪个组长分支</th></tr>
+      <tr><td>刘玉健</td><td><code>git checkout g1-lyj</code></td><td><code>git merge origin/leader-g1-mty</code></td></tr>
+      <tr><td>孙赫明</td><td><code>git checkout g2-shm</code></td><td><code>git merge origin/leader-g2-lyx</code></td></tr>
+      <tr><td>周佳辛</td><td><code>git checkout g2-zjx</code></td><td><code>git merge origin/leader-g2-lyx</code></td></tr>
+      <tr><td>任思睿</td><td><code>git checkout g3-rsr</code></td><td><code>git merge origin/leader-g3-mty</code></td></tr>
+      <tr><td>吴晨阳</td><td><code>git checkout g3-wcy</code></td><td><code>git merge origin/leader-g3-mty</code></td></tr>
+      <tr><td>刘宇童</td><td><code>git checkout g3-lyt</code></td><td><code>git merge origin/leader-g3-mty</code></td></tr>
+      <tr><td>李兆一</td><td><code>git checkout g3-lzy</code></td><td><code>git merge origin/leader-g3-mty</code></td></tr>
+    </table>
+
+    <h3>7.3 开发中</h3>
+    <pre><code># 确认当前分支
+git branch
+
+# 查看当前改动
+git status
+
+# 查看具体改动
+git diff
+
+# 保存为一次本地提交
+git add .
+git commit -m "完成 xxx 功能/修复 xxx 问题"
+
+# 上传到 GitHub 上自己的分支
+git push</code></pre>
+
+    <h3>7.4 开发后：必须在 GitHub 上创建 PR</h3>
+    <p>执行 <code>git push</code> 以后，只是把代码传到了自己的分支，还没有进入组长分支。接下来必须打开 GitHub 网站创建 Pull Request。</p>
+    <pre><code>朱佑铭示例：
+base: leader-g1-mty
+compare: g1-zym
+
+刘玉健示例：
+base: leader-g1-mty
+compare: g1-lyj
+
+孙赫明示例：
+base: leader-g2-lyx
+compare: g2-shm
+
+吴晨阳示例：
+base: leader-g3-mty
+compare: g3-wcy</code></pre>
+    <p>PR 创建后，组长才能在 Pull requests 页面看到并审核。</p>
+  </section>
+
+  <section id="commands" class="card">
+    <h2>8. 命令详解：什么时候用、什么意思、预期输出</h2>
+    <table>
+      <tr><th>场景</th><th>命令</th><th>含义</th><th>预期输出 / 判断标准</th></tr>
+      <tr>
+        <td>查看当前状态</td>
+        <td><code>git status</code></td>
+        <td>看当前在哪个分支，有没有未提交改动</td>
+        <td><code>On branch g1-zym</code>；理想是 <code>nothing to commit, working tree clean</code></td>
+      </tr>
+      <tr>
+        <td>查看本地分支</td>
+        <td><code>git branch</code></td>
+        <td>列出本地分支</td>
+        <td>带 <code>*</code> 的是当前分支，例如 <code>* g1-zym</code></td>
+      </tr>
+      <tr>
+        <td>查看远程分支</td>
+        <td><code>git branch -r</code></td>
+        <td>列出 GitHub 上的远程分支快照</td>
+        <td><code>origin/main</code>、<code>origin/leader-g1-mty</code>、<code>origin/g1-zym</code></td>
+      </tr>
+      <tr>
+        <td>更新远程信息</td>
+        <td><code>git fetch origin</code></td>
+        <td>只更新远程分支信息，不会改当前代码文件</td>
+        <td>可能显示 <code>[new branch]</code> 或 <code>main -> origin/main</code></td>
+      </tr>
+      <tr>
+        <td>切换分支</td>
+        <td><code>git checkout g1-zym</code></td>
+        <td>切换到本地已有分支</td>
+        <td><code>Switched to branch 'g1-zym'</code></td>
+      </tr>
+      <tr>
+        <td>远程有分支但本地没有</td>
+        <td><code>git checkout -b g1-zym origin/g1-zym</code></td>
+        <td>在本地创建并切换到该分支，同时跟踪远程分支</td>
+        <td><code>Switched to a new branch 'g1-zym'</code></td>
+      </tr>
+      <tr>
+        <td>同步 main</td>
+        <td><code>git pull origin main</code></td>
+        <td>当前在 main 时，把 GitHub 最新 main 拉到本地 main</td>
+        <td><code>Already up to date.</code> 或 <code>Updating ...</code></td>
+      </tr>
+      <tr>
+        <td>组员同步组长分支</td>
+        <td><code>git merge origin/leader-g1-mty</code></td>
+        <td>当前在个人分支时，把组长分支最新内容合进来</td>
+        <td><code>Already up to date.</code> 或 <code>Merge made by the 'ort' strategy.</code></td>
+      </tr>
+      <tr>
+        <td>组长同步 main</td>
+        <td><code>git merge origin/main</code></td>
+        <td>当前在组长分支时，把 main 最新内容合进来</td>
+        <td>如进入 Vim，按 <span class="kbd">Esc</span>，输入 <code>:wq</code> 回车</td>
+      </tr>
+      <tr>
+        <td>查看具体改动</td>
+        <td><code>git diff</code></td>
+        <td>看当前还没提交的改动</td>
+        <td><code>+</code> 是新增，<code>-</code> 是删除</td>
+      </tr>
+      <tr>
+        <td>加入暂存区</td>
+        <td><code>git add .</code></td>
+        <td>把当前目录下所有改动准备加入下一次提交</td>
+        <td>通常没有输出</td>
+      </tr>
+      <tr>
+        <td>提交到本地</td>
+        <td><code>git commit -m "说明"</code></td>
+        <td>生成一个本地提交</td>
+        <td><code>[g1-zym abc1234] 说明</code></td>
+      </tr>
+      <tr>
+        <td>推送到远程</td>
+        <td><code>git push</code></td>
+        <td>把本地提交上传到 GitHub 对应分支</td>
+        <td><code>Enumerating objects...</code>、<code>Writing objects...</code></td>
+      </tr>
+      <tr>
+        <td>第一次推送新分支</td>
+        <td><code>git push -u origin g1-zym</code></td>
+        <td>推送并建立本地分支与远程分支的跟踪关系</td>
+        <td><code>branch 'g1-zym' set up to track...</code></td>
+      </tr>
+      <tr>
+        <td>负责人查看组长分支提交</td>
+        <td><code>git log --oneline origin/main..origin/leader-g1-mty</code></td>
+        <td>看小组1组长分支比 main 多了哪些提交</td>
+        <td>显示短 commit id 和提交信息</td>
+      </tr>
+      <tr>
+        <td>负责人查看组长分支文件变化</td>
+        <td><code>git diff --name-status origin/main..origin/leader-g1-mty</code></td>
+        <td>只看变更文件列表</td>
+        <td><code>M</code> 修改，<code>A</code> 新增，<code>D</code> 删除</td>
+      </tr>
+      <tr>
+        <td>负责人查看具体代码差异</td>
+        <td><code>git diff origin/main..origin/leader-g1-mty</code></td>
+        <td>查看组长分支相对 main 的完整差异</td>
+        <td><code>+</code> 新增行，<code>-</code> 删除行</td>
+      </tr>
+    </table>
+  </section>
+
+  <section id="review" class="card">
+    <h2>9. 审核清单</h2>
+
+    <h3>9.1 组长审核组员 PR</h3>
+    <ul>
+      <li>✅ PR 方向正确：<code>base</code> 是本组组长分支，<code>compare</code> 是组员个人分支。</li>
+      <li>✅ 改动内容属于该组员负责的任务。</li>
+      <li>✅ 没有误提交 <code>.venv/</code>、<code>node_modules/</code>、<code>*.sqlite3</code>、<code>.env</code>。</li>
+      <li>✅ 没有真实账号、密码、token、隐私信息。</li>
+      <li>✅ 依赖文件改动合理，例如 <code>package-lock.json</code>、<code>requirements.txt</code>。</li>
+      <li>✅ 没有大面积删除无关文件。</li>
+    </ul>
+
+    <h3>9.2 总负责人审核组长 PR</h3>
+    <ul>
+      <li>✅ PR 方向正确：<code>base: main</code>，<code>compare: leader-g1-mty / leader-g2-lyx / leader-g3-mty</code>。</li>
+      <li>✅ 组长已经整合并审核本组成员提交。</li>
+      <li>✅ Files changed 中无敏感文件、环境文件、数据库文件。</li>
+      <li>✅ 代码改动范围与本阶段任务一致。</li>
+      <li>✅ 如涉及前后端联调，PR 描述中说明接口、页面和测试情况。</li>
+      <li>✅ GitHub 显示可合并，或者冲突已经解决。</li>
+    </ul>
+
+    <h3>9.3 PR 描述模板</h3>
+    <pre><code>## 本次改动
+- 本组完成了 xxx
+- 修改了 xxx 页面 / 接口 / 文档
+
+## 涉及分支
+- 来源分支：
+- 目标分支：
+
+## 修改范围
+- frontend/...
+- backend/...
+- docs/...
+
+## 自测情况
+- [ ] 本地启动成功
+- [ ] 页面功能可用
+- [ ] 后端接口可用
+- [ ] 无敏感文件提交
+
+## 备注
+- 是否需要安装新依赖：
+- 是否需要数据库迁移：
+- 是否有待总负责人重点审核的地方：</code></pre>
+  </section>
+
+  <section id="problems" class="card">
+    <h2>10. 常见问题</h2>
+
+    <h3>问题 1：为什么我 push 了，但 Pull Request 页面没有东西？</h3>
+    <p>因为 <code>git push</code> 只上传分支，不会自动创建 PR。需要打开 GitHub 网站，点击 <strong>Compare & pull request</strong> 或进入 Pull requests → New pull request 手动创建。</p>
+
+    <h3>问题 2：切换分支时报错 <code>pathspec did not match</code></h3>
+    <p>说明本地没有这个分支。先获取远程分支列表，再创建本地跟踪分支。</p>
+    <pre><code>git fetch origin
+git branch -r
+git checkout -b g1-zym origin/g1-zym</code></pre>
+
+    <h3>问题 3：merge 后进入 Vim，不知道怎么办</h3>
+    <p>这是 Git 让你确认合并提交信息。默认信息可以保留。</p>
+    <pre><code>按 Esc
+输入 :wq
+回车</code></pre>
+
+    <h3>问题 4：误提交了虚拟环境、数据库或密钥文件</h3>
+    <p>先加入 <code>.gitignore</code>，再从 Git 跟踪中移除。</p>
+    <pre><code># .gitignore 建议包含：
+.venv/
+backend/.venv/
+node_modules/
+*.sqlite3
+.env
+__pycache__/
+*.pyc
+*.egg-info/
+
+# 如果已经被 Git 跟踪：
+git rm -r --cached backend/.venv
+git rm --cached backend/muduo_dev.sqlite3
+git add .gitignore
+git commit -m "忽略本地环境和数据库文件"
+git push</code></pre>
+
+    <h3>问题 5：当前分支 ahead by N commits</h3>
+    <p>表示本地有提交还没有推送到 GitHub。确认无误后：</p>
+    <pre><code>git push</code></pre>
+
+    <h3>问题 6：当前分支 behind by N commits</h3>
+    <p>表示 GitHub 上该分支有新提交，本地还没有。通常先 fetch，再 merge。</p>
+    <pre><code>git fetch origin
+git merge origin/当前分支名</code></pre>
+
+    <h3>问题 7：合并冲突</h3>
+    <p>Git 会在冲突文件里留下标记：</p>
+    <pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+你当前分支的内容
+=======
+对方分支的内容
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; origin/xxx</code></pre>
+    <p>处理方法：</p>
+    <pre><code>手动编辑文件，保留正确内容，删除冲突标记
+git add 冲突文件
+git commit
+git push</code></pre>
+
+    <h3>问题 8：马天一两个分支混淆怎么办？</h3>
+    <p>每次操作前先看当前分支。</p>
+    <pre><code>git branch
+git status</code></pre>
+    <p>如果是小组1任务，应该在 <code>g1-mty</code> 或 <code>leader-g1-mty</code>；如果是小组3任务，应该在 <code>g3-mty</code> 或 <code>leader-g3-mty</code>。</p>
+  </section>
+
+  <section class="card">
+    <h2>一句话总流程</h2>
+    <pre><code>普通组员：
+自己的分支开发 → git push → GitHub 创建 PR 到本组组长分支 → 等组长审核
+
+小组组长：
+审核本组成员 PR → 合并到组长整合分支 → 阶段完成后创建 PR 到 main → 等窦思颖审核
+
+总负责人窦思颖：
+审核各组长分支 PR → 确认安全和功能正确 → Merge pull request 到 main</code></pre>
+  </section>
+</main>
+</body>
+</html>

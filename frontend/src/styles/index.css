@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* react-quill 适配 */
+.quill-wrapper .ql-toolbar {
+  border: none;
+  border-bottom: 1px solid #f3f4f6;
+  border-radius: 0;
+  padding: 8px 12px;
+}
+.quill-wrapper .ql-container {
+  border: none;
+  border-radius: 0 0 12px 12px;
+  font-size: 14px;
+}
+.quill-wrapper .ql-editor {
+  min-height: 100px;
+  padding: 12px 16px;
+}
+.quill-wrapper .ql-editor.ql-blank::before {
+  color: #9ca3af;
+  font-style: normal;
+}
+
+/* ===== Muduo Design System v2 ===== */
+
+@layer base {
+  :root {
+    font-family: 'Inter', 'PingFang SC', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    font-weight: 400;
+    color-scheme: light;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background-color: #FFFFFF;
+    color: #1F1F1F;
+  }
+
+  #root { width: 100vw; height: 100vh; }
+}
+
+/* ===== 全局组件类 ===== */
+
+@layer components {
+  /* 标准卡片: 24px 圆角 + 白底 + 极淡阴影 */
+  .card {
+    @apply bg-white rounded-3xl;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .card-hover:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+    transform: translateY(-2px);
+  }
+
+  /* 浅彩统计卡片 */
+  .card-stat { @apply rounded-3xl p-6; }
+  .card-stat-lilac { background-color: #E9E2F7; }
+  .card-stat-sky   { background-color: #E2EBF7; }
+  .card-stat-mint  { background-color: #D7EFE4; }
+  .card-stat-neon  { background-color: #10A37F; }
+
+  /* 页面标题 */
+  .page-title { @apply text-[28px] font-bold text-[#1F1F1F] tracking-tight leading-tight; }
+
+  /* 小节标题 */
+  .section-title { @apply text-base font-semibold text-[#1F1F1F]; }
+
+  /* 统计大数字 */
+  .stat-number { @apply text-[36px] font-bold text-[#1F1F1F] tracking-tight leading-none; }
+
+  /* 徽章 */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  /* 进度条 */
+  .progress-bar { @apply w-full h-2 bg-black/5 rounded-full overflow-hidden; }
+  .progress-fill { @apply h-full rounded-full transition-all duration-500 ease-out; }
+
+  /* 主按钮: 墨绿 + 44px高 + 24px圆角 */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 h-11 text-sm font-semibold text-white rounded-3xl;
+    background-color: #10A37F;
+    transition: all 0.2s ease;
+  }
+  .btn-primary:hover {
+    background-color: #0D8B6C;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(16,163,127,0.25);
+  }
+  .btn-primary:active {
+    background-color: #0B7A5E;
+    transform: translateY(0);
+  }
+
+  /* 次按钮 */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center px-5 h-11 text-sm font-medium text-[#7B7B7B] rounded-3xl;
+    transition: all 0.2s ease;
+  }
+  .btn-ghost:hover {
+    background-color: rgba(0,0,0,0.03);
+    color: #1F1F1F;
+  }
+  .btn-ghost:active { background-color: rgba(0,0,0,0.06); }
+
+  /* 统一输入框 */
+  .input-base {
+    @apply w-full px-4 py-2.5 text-sm rounded-2xl bg-black/[0.02] border border-black/5
+           placeholder:text-[#A0A0A0]
+           focus:outline-none focus:ring-2 focus:ring-[#10A37F]/30 focus:border-[#10A37F] focus:bg-white;
+    transition: all 0.2s ease;
+  }
+
+  /* 浅彩标签 */
+  .tag-neon { @apply bg-[#DDF0EA] text-[#0B7A5E] }
+  .tag-sky  { @apply bg-[#E2EBF7] text-[#2C5282] }
+  .tag-lilac{ @apply bg-[#E9E2F7] text-[#5B3FA8] }
+  .tag-mint { @apply bg-[#D7EFE4] text-[#1A7A57] }
+
+  /* 语音波形动画 */
+  @keyframes wave {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(0.4); }
+  }
+}

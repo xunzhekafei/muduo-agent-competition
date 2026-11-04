@@ -1,0 +1,42 @@
+[project]
+name = "muduo-backend"
+version = "0.1.0"
+description = "Muduo AI-assisted learning platform backend"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0,<0.116.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic>=2.8.0",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.13.0",
+    # 资源转笔记模块依赖
+    "openai>=1.30.0",
+    "httpx>=0.27.0",
+    "pdfplumber>=0.10.0",
+    "python-pptx>=0.6.0",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    # 速记模块 fun-asr 语音识别依赖
+    "funasr>=1.3.0",
+    "modelscope>=1.30.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx>=0.27.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.6.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["migrations*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

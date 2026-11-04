@@ -1,0 +1,197 @@
+/* ===== TipTap 编辑器容器 ===== */
+.tiptap-editor-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.tiptap-editor-wrapper .tiptap {
+  flex: 1;
+  overflow-y: auto;
+  outline: none;
+  padding: 2rem 3rem;
+  font-size: 15px;
+  line-height: 1.75;
+  color: #1F1F1F;
+  background: #fff;
+  min-height: 100%;
+}
+
+/* ===== 占位文字 ===== */
+.tiptap p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  font-style: italic;
+}
+
+/* ===== 标题 ===== */
+.tiptap h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 1.5rem 0 0.5rem;
+  color: #111;
+}
+
+.tiptap h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 1.25rem 0 0.4rem;
+  color: #1a1a1a;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tiptap h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 1rem 0 0.3rem;
+  color: #2a2a2a;
+}
+
+/* ===== 段落 ===== */
+.tiptap p {
+  margin: 0.4rem 0;
+}
+
+/* ===== 列表 ===== */
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.5rem;
+  margin: 0.4rem 0;
+}
+
+.tiptap li {
+  margin: 0.15rem 0;
+}
+
+/* ===== 任务列表 ===== */
+.tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.tiptap ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.tiptap ul[data-type="taskList"] li label {
+  margin-top: 0.15rem;
+}
+
+/* ===== 引用块 ===== */
+.tiptap blockquote {
+  border-left: 3px solid #10A37F;
+  padding-left: 1rem;
+  margin: 0.6rem 0;
+  color: #6B7280;
+  font-style: italic;
+}
+
+/* ===== 代码 ===== */
+.tiptap code {
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.9em;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  color: #e74c3c;
+}
+
+.tiptap pre {
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 0.6rem 0;
+  overflow-x: auto;
+}
+
+.tiptap pre code {
+  background: none;
+  color: #d4d4d4;
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+/* ===== 高亮 ===== */
+.tiptap mark {
+  background: #fef9c3;
+  border-radius: 2px;
+  padding: 0.1rem 0.2rem;
+}
+
+/* ===== 链接 ===== */
+.tiptap a {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tiptap a:hover {
+  color: #1d4ed8;
+}
+
+/* ===== 分割线 ===== */
+.tiptap hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.5rem 0;
+}
+
+/* ===== 表格 ===== */
+.tiptap table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.6rem 0;
+  table-layout: fixed;
+}
+
+.tiptap table th,
+.tiptap table td {
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  min-width: 80px;
+  position: relative;
+}
+
+.tiptap table th {
+  background: #f9fafb;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* ===== 选中状态 ===== */
+.tiptap *::selection {
+  background: rgba(16, 163, 127, 0.35);
+}
+
+/* ===== 图片 ===== */
+.tiptap img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 0.6rem 0;
+}
+
+/* ===== 粗体 / 斜体 / 删除线 ===== */
+.tiptap strong {
+  font-weight: 600;
+  color: #111;
+}
+
+.tiptap em {
+  font-style: italic;
+}
+
+.tiptap s {
+  text-decoration: line-through;
+  color: #9ca3af;
+}

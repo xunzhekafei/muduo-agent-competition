@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+    environment:
+      MUDUO_ENVIRONMENT: development
+      MUDUO_DEBUG: "true"
+      MUDUO_DATABASE_URL: sqlite+pysqlite:///./muduo_dev.sqlite3
+      MUDUO_AUTH_SECRET_KEY: muduo-dev-secret-change-me
+      MUDUO_LLM_PROVIDER: mock
+      MUDUO_OCR_PROVIDER: mock
+      MUDUO_ASR_PROVIDER: mock
+      MUDUO_EMBEDDING_PROVIDER: mock
+      MUDUO_OBJECT_STORAGE_PROVIDER: mock
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+    command: >
+      sh -c "alembic upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+  nginx:
+    image: nginx:1.27-alpine
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./infra/nginx/muduo.conf:/etc/nginx/conf.d/default.conf:ro

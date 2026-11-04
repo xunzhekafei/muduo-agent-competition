@@ -1,0 +1,34 @@
+# ---- 敏感信息（绝不提交）----
+backend/.env
+*.pem
+*.key
+secrets.*
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# ---- 数据库与运行产物 ----
+*.sqlite3
+*.sqlite3-journal
+.run/
+*.log
+scheduled_tasks.json
+
+# ---- 前端 ----
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ---- 操作系统 / 编辑器 ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.claude/

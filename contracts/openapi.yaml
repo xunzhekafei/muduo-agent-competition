@@ -1,0 +1,3529 @@
+openapi: 3.1.0
+info:
+  title: Muduo API
+  version: 0.1.0
+  description: 木铎笔记模块化单体 MVP 阶段前后端协作 API 契约。
+servers:
+- url: http://localhost:8000
+  description: Local backend
+tags:
+- name: auth
+  description: 登录、刷新 token 和退出登录。
+- name: users
+  description: 用户资料和偏好设置。
+- name: courses
+  description: 课程、章节和学习空间。
+- name: resources
+  description: 上传资源和资源解析。
+- name: import-export
+  description: 导入导出任务。
+- name: workflows
+  description: 跨模块编排与联动入口。
+- name: ai-tasks
+  description: 异步 AI 任务生命周期。
+- name: dashboard
+  description: 学习仪表盘聚合数据。
+- name: notes
+- name: memory
+- name: thinking
+- name: feynman
+- name: knowledge_graph
+- name: community
+- name: workers
+paths:
+  /api/v1/auth/login:
+    post:
+      tags:
+      - auth
+      summary: 用户登录
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSessionResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/v1/auth/refresh:
+    post:
+      tags:
+      - auth
+      summary: 刷新访问 token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: 刷新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSessionResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/v1/auth/logout:
+    post:
+      tags:
+      - auth
+      summary: 退出登录
+      operationId: logout
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 退出成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyDataResponse'
+  /api/v1/users/me:
+    get:
+      tags:
+      - users
+      summary: 获取当前用户
+      operationId: getCurrentUser
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 当前用户资料
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+    patch:
+      tags:
+      - users
+      summary: 更新当前用户资料
+      operationId: updateCurrentUser
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: 更新后的用户资料
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+  /api/v1/users/me/preferences:
+    get:
+      tags:
+      - users
+      summary: 获取当前用户偏好
+      operationId: getCurrentUserPreferences
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 用户偏好
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferencesResponse'
+    patch:
+      tags:
+      - users
+      summary: 更新当前用户偏好
+      operationId: updateCurrentUserPreferences
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferencesUpdateRequest'
+      responses:
+        '200':
+          description: 更新后的用户偏好
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferencesResponse'
+  /api/v1/courses:
+    get:
+      tags:
+      - courses
+      summary: 查询课程列表
+      operationId: listCourses
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: 课程列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseListResponse'
+    post:
+      tags:
+      - courses
+      summary: 创建课程
+      operationId: createCourse
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResponse'
+  /api/v1/courses/{courseId}:
+    parameters:
+    - $ref: '#/components/parameters/CourseId'
+    get:
+      tags:
+      - courses
+      summary: 查询课程详情
+      operationId: getCourse
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 课程详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResponse'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+    patch:
+      tags:
+      - courses
+      summary: 更新课程
+      operationId: updateCourse
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseUpdateRequest'
+      responses:
+        '200':
+          description: 更新后的课程
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResponse'
+    delete:
+      tags:
+      - courses
+      summary: 删除或归档课程
+      operationId: deleteCourse
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyDataResponse'
+  /api/v1/courses/{courseId}/learning-spaces:
+    get:
+      tags:
+      - courses
+      summary: 查询课程学习空间列表
+      operationId: listLearningSpaces
+      security:
+      - bearerAuth: []
+      parameters:
+      - ? ''
+        : '#/components/parameters/CourseId'
+      - ? ''
+        : '#/components/parameters/Page'
+      - ? ''
+        : '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: 学习空间列表
+          content:
+            application/json:
+              schema:
+                ? ''
+                : '#/components/schemas/LearningSpaceListResponse'
+        '404':
+          ? ''
+          : '#/components/responses/ResourceNotFoundError'
+    post:
+      tags:
+      - courses
+      summary: 创建课程学习空间
+      operationId: createLearningSpace
+      security:
+      - bearerAuth: []
+      parameters:
+      - ? ''
+        : '#/components/parameters/CourseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              ? ''
+              : '#/components/schemas/LearningSpaceCreateRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                ? ''
+                : '#/components/schemas/LearningSpaceResponse'
+        '404':
+          ? ''
+          : '#/components/responses/ResourceNotFoundError'
+  /api/v1/courses/{courseId}/learning-spaces/{spaceId}:
+    parameters:
+    - ? ''
+      : '#/components/parameters/CourseId'
+    - ? ''
+      : '#/components/parameters/LearningSpaceId'
+    get:
+      tags:
+      - courses
+      summary: 查询学习空间详情
+      operationId: getLearningSpace
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 学习空间详情
+          content:
+            application/json:
+              schema:
+                ? ''
+                : '#/components/schemas/LearningSpaceResponse'
+        '404':
+          ? ''
+          : '#/components/responses/ResourceNotFoundError'
+    patch:
+      tags:
+      - courses
+      summary: 更新学习空间
+      operationId: updateLearningSpace
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              ? ''
+              : '#/components/schemas/LearningSpaceUpdateRequest'
+      responses:
+        '200':
+          description: 更新后的学习空间
+          content:
+            application/json:
+              schema:
+                ? ''
+                : '#/components/schemas/LearningSpaceResponse'
+        '404':
+          ? ''
+          : '#/components/responses/ResourceNotFoundError'
+    delete:
+      tags:
+      - courses
+      summary: 删除或归档学习空间
+      operationId: deleteLearningSpace
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                ? ''
+                : '#/components/schemas/EmptyDataResponse'
+        '404':
+          ? ''
+          : '#/components/responses/ResourceNotFoundError'
+  /api/v1/resources:
+    get:
+      tags:
+      - resources
+      summary: 查询资源列表
+      operationId: listResources
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - name: courseId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: learningSpaceId
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 资源列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceListResponse'
+    post:
+      tags:
+      - resources
+      summary: 登记上传资源
+      operationId: createResource
+      security:
+      - bearerAuth: []
+      description: MVP 阶段先登记资源元数据；真实文件上传可后续切换为 multipart 或对象存储直传。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceCreateRequest'
+      responses:
+        '201':
+          description: 资源创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceResponse'
+        '415':
+          $ref: '#/components/responses/UnsupportedFileTypeError'
+  /api/v1/resources/{resourceId}:
+    parameters:
+    - $ref: '#/components/parameters/ResourceId'
+    get:
+      tags:
+      - resources
+      summary: 查询资源详情
+      operationId: getResource
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 资源详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceResponse'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+    delete:
+      tags:
+      - resources
+      summary: 删除或归档资源
+      operationId: deleteResource
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyDataResponse'
+  /api/v1/resources/{resourceId}/parse:
+    post:
+      tags:
+      - resources
+      summary: 创建资源解析任务
+      operationId: createResourceParseTask
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceParseRequest'
+      responses:
+        '202':
+          description: 已创建解析任务
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskAcceptedResponse'
+  /api/v1/resources/{resourceId}/parsed-result:
+    get:
+      tags:
+      - resources
+      summary: 获取资源解析结果
+      operationId: getResourceParsedResult
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: 解析结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParsedResourceResponse'
+  /api/v1/import-jobs:
+    post:
+      tags:
+      - import-export
+      summary: 创建资料导入任务
+      operationId: createImportJob
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportJobCreateRequest'
+      responses:
+        '202':
+          description: 已创建导入任务
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportExportJobResponse'
+  /api/v1/import-jobs/{jobId}:
+    get:
+      tags:
+      - import-export
+      summary: 查询资料导入任务
+      operationId: getImportJob
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: 导入任务详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportExportJobResponse'
+  /api/v1/export-jobs:
+    post:
+      tags:
+      - import-export
+      summary: 创建笔记导出任务
+      operationId: createExportJob
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportJobCreateRequest'
+      responses:
+        '202':
+          description: 已创建导出任务
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportExportJobResponse'
+  /api/v1/export-jobs/{jobId}:
+    get:
+      tags:
+      - import-export
+      summary: 查询笔记导出任务
+      operationId: getExportJob
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: 导出任务详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportExportJobResponse'
+  /api/v1/ai-tasks:
+    post:
+      tags:
+      - ai-tasks
+      summary: 创建 AI 任务
+      operationId: createAiTask
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiTaskCreateRequest'
+      responses:
+        '202':
+          description: 已创建 AI 任务
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskAcceptedResponse'
+  /api/v1/ai-tasks/{taskId}:
+    get:
+      tags:
+      - ai-tasks
+      summary: 查询 AI 任务状态
+      operationId: getAiTask
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: AI 任务详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiTaskResponse'
+    patch:
+      tags:
+      - ai-tasks
+      summary: 更新 AI 任务状态
+      operationId: updateAiTask
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiTaskUpdateRequest'
+      responses:
+        '200':
+          description: 更新后的 AI 任务详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiTaskResponse'
+  /api/v1/ai-tasks/{taskId}/cancel:
+    post:
+      tags:
+      - ai-tasks
+      summary: 取消 AI 任务
+      operationId: cancelAiTask
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 取消后的任务详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiTaskResponse'
+  /api/v1/ai/openai/chat/completions:
+    post:
+      tags:
+      - ai-tasks
+      summary: OpenAI Chat Completions 兼容任务登记
+      operationId: createOpenAiChatCompletionTask
+      security:
+      - bearerAuth: []
+      description: 预留 OpenAI Chat Completions 请求形状；MVP 阶段先登记为异步 AI 任务，不直接调用外部模型。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAiChatCompletionRequest'
+      responses:
+        '202':
+          description: 已登记 OpenAI 兼容 AI 任务
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskAcceptedResponse'
+  /api/v1/workflows/resource-notes/import:
+    post:
+      tags:
+      - workflows
+      summary: 创建资源转笔记导入工作流
+      operationId: createResourceNoteImport
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportJobCreateRequest'
+      responses:
+        '202':
+          description: 已创建导入任务和资源解析任务
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportExportJobResponse'
+  /api/v1/workflows/resource-notes/context:
+    get:
+      tags:
+      - workflows
+      summary: 获取资源转笔记上下文
+      operationId: getResourceNoteContext
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: courseId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: resourceId
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 用户、课程、资源、任务和解析结果组合上下文
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceWorkflowContextResponse'
+  /api/v1/workflows/resource-notes/parse-tasks/{taskId}/complete:
+    post:
+      tags:
+      - workflows
+      summary: 完成资源解析并生成笔记草稿
+      operationId: completeResourceParseTask
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteResourceParseRequest'
+      responses:
+        '200':
+          description: 解析结果、任务状态和笔记草稿
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceParseCompletionResponse'
+  /api/v1/dashboard/overview:
+    get:
+      tags:
+      - dashboard
+      summary: 获取学习仪表盘聚合数据
+      operationId: getDashboardOverview
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 仪表盘数据
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardOverviewResponse'
+  /api/v1/notes:
+    get:
+      tags:
+      - notes
+      summary: List notes owned by current user
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - name: tag
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Notes list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteListResponse'
+    post:
+      tags:
+      - notes
+      summary: Create a note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNoteRequest'
+      responses:
+        '201':
+          description: Created note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteResponse'
+  /api/v1/notes/{noteId}:
+    get:
+      tags:
+      - notes
+      summary: Get note detail with blocks and relations
+      parameters:
+      - $ref: '#/components/parameters/NoteId'
+      responses:
+        '200':
+          description: Note detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+      - notes
+      summary: Update a note
+      parameters:
+      - $ref: '#/components/parameters/NoteId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNoteRequest'
+      responses:
+        '200':
+          description: Updated note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteResponse'
+    delete:
+      tags:
+      - notes
+      summary: Archive a note
+      parameters:
+      - $ref: '#/components/parameters/NoteId'
+      responses:
+        '200':
+          description: Archived note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyDataResponse'
+  /api/v1/notes/{noteId}/blocks:
+    post:
+      tags:
+      - notes
+      summary: Append a block to a note
+      parameters:
+      - $ref: '#/components/parameters/NoteId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNoteBlockRequest'
+      responses:
+        '201':
+          description: Created block
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteBlockResponse'
+  /api/v1/notes/{noteId}/relations:
+    post:
+      tags:
+      - notes
+      summary: Link two notes
+      parameters:
+      - $ref: '#/components/parameters/NoteId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNoteRelationRequest'
+      responses:
+        '201':
+          description: Created relation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteRelationResponse'
+  /api/v1/memory/cards:
+    get:
+      tags:
+      - memory
+      summary: List due memory cards
+      responses:
+        '200':
+          description: Due memory cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryCardListResponse'
+    post:
+      tags:
+      - memory
+      summary: Create a memory card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMemoryCardRequest'
+      responses:
+        '201':
+          description: Created card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryCardResponse'
+  /api/v1/memory/cards/{cardId}/reviews:
+    post:
+      tags:
+      - memory
+      summary: Record a memory card review
+      parameters:
+      - $ref: '#/components/parameters/CardId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReviewRecordRequest'
+      responses:
+        '201':
+          description: Created review record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewRecordResponse'
+  /api/v1/memory/library:
+    get:
+      tags:
+      - memory
+      summary: Get memory library overview for current user
+      operationId: getMemoryLibrary
+      responses:
+        '200':
+          description: Memory library data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryLibraryResponse'
+  /api/v1/memory/notes/{noteId}/generate:
+    post:
+      tags:
+      - memory
+      summary: Generate memory cards from a note using AI
+      operationId: generateMemoryCards
+      parameters:
+      - $ref: '#/components/parameters/NoteId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateCardsRequest'
+      responses:
+        '200':
+          description: Generated cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateCardsResponse'
+        '422':
+          $ref: '#/components/responses/ResourceNotFoundError'
+  /api/v1/memory/notes/{noteId}/cycle:
+    put:
+      tags:
+      - memory
+      summary: Set review cycle for a note's memory cards
+      operationId: setMemoryCycle
+      parameters:
+      - $ref: '#/components/parameters/NoteId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CycleSetRequest'
+      responses:
+        '200':
+          description: Cycle set successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CycleSetResponse'
+  /api/v1/memory/notes/{noteId}/complete-review:
+    post:
+      tags:
+      - memory
+      summary: Complete a full review round for all cards of a note
+      operationId: completeNoteReview
+      parameters:
+      - $ref: '#/components/parameters/NoteId'
+      responses:
+        '200':
+          description: Review completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteReviewResponse'
+  /api/v1/thinking/sessions:
+    post:
+      tags:
+      - thinking
+      summary: Start a thinking session for a note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateThinkingSessionRequest'
+      responses:
+        '201':
+          description: Created thinking session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThinkingSessionResponse'
+  /api/v1/thinking/sessions/{sessionId}/prompts:
+    post:
+      tags:
+      - thinking
+      summary: Add a Socratic prompt or revision prompt
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateThinkingPromptRequest'
+      responses:
+        '201':
+          description: Created prompt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThinkingPromptResponse'
+  /api/v1/thinking/sessions/{sessionId}:
+    get:
+      tags:
+      - thinking
+      summary: Get thinking session detail
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Thinking session detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThinkingSessionDetailResponse'
+  /api/v1/thinking/sessions/{sessionId}/suggestions:
+    post:
+      tags:
+      - thinking
+      summary: Add a revision suggestion
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRevisionSuggestionRequest'
+      responses:
+        '201':
+          description: Created revision suggestion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevisionSuggestionResponse'
+  /api/v1/thinking/sessions/{sessionId}/complete:
+    post:
+      tags:
+      - thinking
+      summary: Complete a thinking session
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Completed thinking session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThinkingSessionResponse'
+  /api/v1/feynman/sessions:
+    post:
+      tags:
+      - feynman
+      summary: Start a Feynman explanation session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeynmanSessionRequest'
+      responses:
+        '201':
+          description: Created Feynman session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeynmanSessionResponse'
+  /api/v1/feynman/sessions/{sessionId}/evaluation:
+    post:
+      tags:
+      - feynman
+      summary: Store a Feynman evaluation
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeynmanEvaluationRequest'
+      responses:
+        '201':
+          description: Created evaluation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeynmanEvaluationResponse'
+  /api/v1/feynman/sessions/{sessionId}:
+    get:
+      tags:
+      - feynman
+      summary: Get Feynman session detail
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Feynman session detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeynmanSessionDetailResponse'
+  /api/v1/feynman/sessions/{sessionId}/questions:
+    post:
+      tags:
+      - feynman
+      summary: Add a Feynman follow-up question
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeynmanQuestionRequest'
+      responses:
+        '201':
+          description: Created question
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeynmanQuestionResponse'
+  /api/v1/knowledge-graph:
+    get:
+      tags:
+      - knowledge_graph
+      summary: Get current user's knowledge graph
+      responses:
+        '200':
+          description: Knowledge graph
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeGraphResponse'
+  /api/v1/knowledge-graph/concepts:
+    post:
+      tags:
+      - knowledge_graph
+      summary: Create or update a concept
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertConceptRequest'
+      responses:
+        '200':
+          description: Upserted concept
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConceptResponse'
+  /api/v1/knowledge-graph/relations:
+    post:
+      tags:
+      - knowledge_graph
+      summary: Link two concepts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConceptRelationRequest'
+      responses:
+        '201':
+          description: Created concept relation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConceptRelationResponse'
+  /api/v1/knowledge-graph/mastery:
+    put:
+      tags:
+      - knowledge_graph
+      summary: Update concept mastery state
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMasteryStateRequest'
+      responses:
+        '200':
+          description: Updated mastery state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MasteryStateResponse'
+  /api/v1/community/assets:
+    get:
+      tags:
+      - community
+      summary: List public shared assets
+      parameters:
+      - name: tag
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Shared assets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SharedAssetListResponse'
+    post:
+      tags:
+      - community
+      summary: Publish a shared learning asset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSharedAssetRequest'
+      responses:
+        '201':
+          description: Published asset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SharedAssetResponse'
+  /api/v1/community/assets/{assetId}/collections:
+    post:
+      tags:
+      - community
+      summary: Collect and optionally reuse a shared asset
+      parameters:
+      - $ref: '#/components/parameters/AssetId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCollectionRequest'
+      responses:
+        '201':
+          description: Created collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionResponse'
+  /api/v1/community/assets/{assetId}/posts:
+    post:
+      tags:
+      - community
+      summary: Create a community post for a shared asset
+      parameters:
+      - $ref: '#/components/parameters/AssetId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommunityPostRequest'
+      responses:
+        '201':
+          description: Created post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityPostResponse'
+  /api/v1/community/interactions:
+    post:
+      tags:
+      - community
+      summary: Add a community interaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommunityInteractionRequest'
+      responses:
+        '201':
+          description: Created interaction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityInteractionResponse'
+  /api/v1/community/contributions:
+    get:
+      tags:
+      - community
+      summary: List current user's contribution records
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Contribution records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContributionRecordListResponse'
+  /api/v1/workers/tasks:
+    post:
+      tags:
+      - workers
+      summary: Enqueue a background task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkerTaskRequest'
+      responses:
+        '202':
+          description: Accepted task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkerTaskResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    CourseId:
+      name: courseId
+      in: path
+      required: true
+      schema:
+        type: string
+    ResourceId:
+      name: resourceId
+      in: path
+      required: true
+      schema:
+        type: string
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      schema:
+        type: string
+    JobId:
+      name: jobId
+      in: path
+      required: true
+      schema:
+        type: string
+    NoteId:
+      name: noteId
+      in: path
+      required: true
+      schema:
+        type: string
+    CardId:
+      name: cardId
+      in: path
+      required: true
+      schema:
+        type: string
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: string
+    AssetId:
+      name: assetId
+      in: path
+      required: true
+      schema:
+        type: string
+    LearningSpaceId:
+      name: spaceId
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    UnauthorizedError:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ResourceNotFoundError:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnsupportedFileTypeError:
+      description: 文件格式不支持
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    EmptyDataResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          type: object
+          additionalProperties: false
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorBody'
+    ErrorBody:
+      type: object
+      required:
+      - code
+      - message
+      - details
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+    Pagination:
+      type: object
+      required:
+      - page
+      - pageSize
+      - total
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+    ErrorCode:
+      type: string
+      enum:
+      - VALIDATION_ERROR
+      - RESOURCE_NOT_FOUND
+      - UNAUTHORIZED
+      - FORBIDDEN
+      - INTERNAL_SERVER_ERROR
+      - HTTP_ERROR
+      - INVALID_CREDENTIALS
+      - TOKEN_EXPIRED
+      - UNSUPPORTED_FILE_TYPE
+      - RESOURCE_PARSE_FAILED
+      - AI_TASK_FAILED
+      - IMPORT_EXPORT_FAILED
+    UserRole:
+      type: string
+      enum:
+      - student
+      - teacher
+      - admin
+    ResourceType:
+      type: string
+      enum:
+      - pdf
+      - ppt
+      - markdown
+      - image
+      - audio
+      - video
+      - webpage
+      - text
+      - other
+    ResourceStatus:
+      type: string
+      enum:
+      - uploaded
+      - parsing
+      - parsed
+      - failed
+      - archived
+    AiTaskType:
+      type: string
+      enum:
+      - resource_parse
+      - ocr
+      - asr
+      - llm_summary
+      - memory_card_generation
+      - feynman_evaluation
+      - knowledge_graph_update
+      - community_indexing
+    AiTaskStatus:
+      type: string
+      enum:
+      - queued
+      - running
+      - succeeded
+      - failed
+      - canceled
+    ImportExportJobType:
+      type: string
+      enum:
+      - import
+      - export
+    ImportExportStatus:
+      type: string
+      enum:
+      - queued
+      - running
+      - succeeded
+      - failed
+      - canceled
+    ExportFormat:
+      type: string
+      enum:
+      - markdown
+      - pdf
+      - json
+    LoginRequest:
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 1
+    RefreshTokenRequest:
+      type: object
+      required:
+      - refreshToken
+      properties:
+        refreshToken:
+          type: string
+    AuthSession:
+      type: object
+      required:
+      - accessToken
+      - refreshToken
+      - tokenType
+      - expiresIn
+      - user
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          description: access token 有效秒数
+        user:
+          $ref: '#/components/schemas/User'
+    AuthSessionResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/AuthSession'
+    User:
+      type: object
+      required:
+      - id
+      - name
+      - email
+      - role
+      - createdAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        avatarUrl:
+          type: string
+          nullable: true
+        role:
+          $ref: '#/components/schemas/UserRole'
+        createdAt:
+          type: string
+          format: date-time
+    UserResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/User'
+    UserUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+    UserPreferences:
+      type: object
+      required:
+      - theme
+      - language
+      - dailyReviewReminder
+      - aiGuidanceLevel
+      properties:
+        theme:
+          type: string
+          enum:
+          - system
+          - light
+          - dark
+        language:
+          type: string
+          example: zh-CN
+        dailyReviewReminder:
+          type: boolean
+        reminderTime:
+          type: string
+          nullable: true
+          example: '20:00'
+        aiGuidanceLevel:
+          type: string
+          enum:
+          - strict
+          - balanced
+          - gentle
+    UserPreferencesResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/UserPreferences'
+    UserPreferencesUpdateRequest:
+      allOf:
+      - $ref: '#/components/schemas/UserPreferences'
+    Course:
+      type: object
+      required:
+      - id
+      - name
+      - subject
+      - ownerId
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        subject:
+          type: string
+        description:
+          type: string
+          nullable: true
+        ownerId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CourseCreateRequest:
+      type: object
+      required:
+      - name
+      - subject
+      properties:
+        name:
+          type: string
+        subject:
+          type: string
+        description:
+          type: string
+          nullable: true
+    CourseUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        subject:
+          type: string
+        description:
+          type: string
+          nullable: true
+    CourseResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/Course'
+    CourseListResponse:
+      type: object
+      required:
+      - data
+      - pagination
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Course'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    Resource:
+      type: object
+      required:
+      - id
+      - courseId
+      - name
+      - type
+      - status
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+        courseId:
+          type: string
+        learningSpaceId:
+          type: string
+          nullable: true
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/ResourceType'
+        status:
+          $ref: '#/components/schemas/ResourceStatus'
+        sizeBytes:
+          type: integer
+          nullable: true
+        sourceUrl:
+          type: string
+          nullable: true
+        storageKey:
+          type: string
+          nullable: true
+        parseTaskId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ResourceCreateRequest:
+      type: object
+      required:
+      - courseId
+      - name
+      - type
+      properties:
+        courseId:
+          type: string
+        learningSpaceId:
+          type: string
+          nullable: true
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/ResourceType'
+        sizeBytes:
+          type: integer
+          nullable: true
+        sourceUrl:
+          type: string
+          nullable: true
+        storageKey:
+          type: string
+          nullable: true
+    ResourceResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/Resource'
+    ResourceListResponse:
+      type: object
+      required:
+      - data
+      - pagination
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Resource'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    ResourceParseRequest:
+      type: object
+      properties:
+        targetNoteId:
+          type: string
+          nullable: true
+        options:
+          type: object
+          additionalProperties: true
+    ParsedChapter:
+      type: object
+      required:
+      - title
+      - content
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+    ParsedResource:
+      type: object
+      required:
+      - resourceId
+      - title
+      - chapters
+      - coreConcepts
+      properties:
+        resourceId:
+          type: string
+        title:
+          type: string
+        chapters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParsedChapter'
+        coreConcepts:
+          type: array
+          items:
+            type: string
+        noteDraftId:
+          type: string
+          nullable: true
+    ParsedResourceResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ParsedResource'
+    ParsedResourceChapterInput:
+      type: object
+      required:
+      - title
+      - content
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        position:
+          type: integer
+          default: 0
+    CompleteResourceParseRequest:
+      type: object
+      required:
+      - title
+      - chapters
+      properties:
+        title:
+          type: string
+        chapters:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ParsedResourceChapterInput'
+        coreConcepts:
+          type: array
+          items:
+            type: string
+        rawText:
+          type: string
+          nullable: true
+        parserVersion:
+          type: string
+          nullable: true
+        createNoteDraft:
+          type: boolean
+          default: true
+        noteDraftTitle:
+          type: string
+          nullable: true
+    NoteDraftBlock:
+      type: object
+      required:
+      - id
+      - type
+      - content
+      - position
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        content:
+          type: string
+        position:
+          type: integer
+    NoteDraft:
+      type: object
+      required:
+      - id
+      - title
+      - resourceId
+      - status
+      - tags
+      - blocks
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        courseId:
+          type: string
+          nullable: true
+        resourceId:
+          type: string
+        status:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        blocks:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteDraftBlock'
+    ResourceParseCompletion:
+      type: object
+      required:
+      - task
+      - resource
+      - parsedResource
+      properties:
+        task:
+          $ref: '#/components/schemas/AiTask'
+        resource:
+          $ref: '#/components/schemas/Resource'
+        parsedResource:
+          $ref: '#/components/schemas/ParsedResource'
+        noteDraft:
+          $ref: '#/components/schemas/NoteDraft'
+          nullable: true
+    ResourceParseCompletionResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ResourceParseCompletion'
+    ResourceWorkflowContext:
+      type: object
+      required:
+      - user
+      - canCreateParseTask
+      - nextActions
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        course:
+          $ref: '#/components/schemas/Course'
+          nullable: true
+        resource:
+          $ref: '#/components/schemas/Resource'
+          nullable: true
+        parseTask:
+          $ref: '#/components/schemas/AiTask'
+          nullable: true
+        parsedResource:
+          $ref: '#/components/schemas/ParsedResource'
+          nullable: true
+        canCreateParseTask:
+          type: boolean
+        nextActions:
+          type: array
+          items:
+            type: string
+    ResourceWorkflowContextResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ResourceWorkflowContext'
+    TaskAccepted:
+      type: object
+      required:
+      - taskId
+      - status
+      properties:
+        taskId:
+          type: string
+        status:
+          $ref: '#/components/schemas/AiTaskStatus'
+    TaskAcceptedResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/TaskAccepted'
+    ImportJobCreateRequest:
+      type: object
+      required:
+      - courseId
+      - sourceType
+      properties:
+        courseId:
+          type: string
+        sourceType:
+          $ref: '#/components/schemas/ResourceType'
+        sourceUrl:
+          type: string
+          nullable: true
+        resourceId:
+          type: string
+          nullable: true
+        options:
+          type: object
+          additionalProperties: true
+    ExportJobCreateRequest:
+      type: object
+      required:
+      - noteIds
+      - format
+      properties:
+        noteIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        format:
+          $ref: '#/components/schemas/ExportFormat'
+        options:
+          type: object
+          additionalProperties: true
+    ImportExportJob:
+      type: object
+      required:
+      - id
+      - type
+      - status
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+        type:
+          $ref: '#/components/schemas/ImportExportJobType'
+        status:
+          $ref: '#/components/schemas/ImportExportStatus'
+        courseId:
+          type: string
+          nullable: true
+        sourceType:
+          $ref: '#/components/schemas/ResourceType'
+          nullable: true
+        sourceUrl:
+          type: string
+          nullable: true
+        resourceId:
+          type: string
+          nullable: true
+        taskId:
+          type: string
+          nullable: true
+        exportFormat:
+          $ref: '#/components/schemas/ExportFormat'
+          nullable: true
+        noteIds:
+          type: array
+          items:
+            type: string
+        options:
+          type: object
+          additionalProperties: true
+        resultUrl:
+          type: string
+          nullable: true
+        errorCode:
+          type: string
+          nullable: true
+        errorMessage:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ImportExportJobResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ImportExportJob'
+    AiTask:
+      type: object
+      required:
+      - id
+      - type
+      - status
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+        type:
+          $ref: '#/components/schemas/AiTaskType'
+        status:
+          $ref: '#/components/schemas/AiTaskStatus'
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        courseId:
+          type: string
+          nullable: true
+        resourceId:
+          type: string
+          nullable: true
+        input:
+          type: object
+          additionalProperties: true
+        output:
+          type: object
+          additionalProperties: true
+          nullable: true
+        errorCode:
+          type: string
+          nullable: true
+        errorMessage:
+          type: string
+          nullable: true
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        finishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        canceledAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AiTaskCreateRequest:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          $ref: '#/components/schemas/AiTaskType'
+        courseId:
+          type: string
+          nullable: true
+        resourceId:
+          type: string
+          nullable: true
+        input:
+          type: object
+          additionalProperties: true
+    AiTaskUpdateRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/AiTaskStatus'
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        output:
+          type: object
+          additionalProperties: true
+          nullable: true
+        errorCode:
+          type: string
+          nullable: true
+        errorMessage:
+          type: string
+          nullable: true
+    AiTaskResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/AiTask'
+    OpenAiChatMessage:
+      type: object
+      required:
+      - role
+      properties:
+        role:
+          type: string
+        content:
+          oneOf:
+          - type: string
+          - type: array
+            items:
+              type: object
+              additionalProperties: true
+          nullable: true
+        name:
+          type: string
+          nullable: true
+    OpenAiChatCompletionRequest:
+      type: object
+      required:
+      - model
+      - messages
+      properties:
+        model:
+          type: string
+        messages:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OpenAiChatMessage'
+        temperature:
+          type: number
+          nullable: true
+        max_tokens:
+          type: integer
+          minimum: 1
+          nullable: true
+        top_p:
+          type: number
+          nullable: true
+        stream:
+          type: boolean
+          default: false
+        metadata:
+          type: object
+          additionalProperties: true
+    DashboardTask:
+      type: object
+      required:
+      - id
+      - title
+      - courseName
+      - priority
+      - durationMinutes
+      - mode
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        courseName:
+          type: string
+        priority:
+          type: string
+          enum:
+          - low
+          - medium
+          - high
+        durationMinutes:
+          type: integer
+        mode:
+          type: string
+          enum:
+          - quick
+          - thinking
+          - memory
+          - feynman
+        countLabel:
+          type: string
+          nullable: true
+    DashboardOverview:
+      type: object
+      required:
+      - weeklyGoal
+      - todayStudyMinutes
+      - streakDays
+      - tasks
+      - mastery
+      properties:
+        weeklyGoal:
+          type: object
+          required:
+          - completedHours
+          - targetHours
+          - percentage
+          properties:
+            completedHours:
+              type: number
+            targetHours:
+              type: number
+            percentage:
+              type: integer
+        todayStudyMinutes:
+          type: integer
+        streakDays:
+          type: integer
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardTask'
+        mastery:
+          type: object
+          required:
+          - mastered
+          - reviewing
+          - weak
+          properties:
+            mastered:
+              type: integer
+            reviewing:
+              type: integer
+            weak:
+              type: integer
+    DashboardOverviewResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/DashboardOverview'
+    Note:
+      type: object
+      required:
+      - id
+      - ownerId
+      - title
+      - status
+      - tags
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        title:
+          type: string
+        courseId:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - draft
+          - active
+          - archived
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    NoteBlock:
+      type: object
+      required:
+      - id
+      - noteId
+      - blockType
+      - content
+      - position
+      properties:
+        id:
+          type: string
+        noteId:
+          type: string
+        blockType:
+          type: string
+          enum:
+          - paragraph
+          - heading
+          - quote
+          - todo
+          - code
+          - table
+          - ai_summary
+          - thinking
+          - memory_cards
+          - formula
+          - annotation
+          - relations
+        content:
+          type: string
+        position:
+          type: integer
+    NoteRelation:
+      type: object
+      required:
+      - id
+      - sourceNoteId
+      - targetNoteId
+      - relationType
+      properties:
+        id:
+          type: string
+        sourceNoteId:
+          type: string
+        targetNoteId:
+          type: string
+        relationType:
+          type: string
+          enum:
+          - backlink
+          - reference
+          - prerequisite
+          - related
+        context:
+          type: string
+          nullable: true
+    CreateNoteRequest:
+      type: object
+      required:
+      - title
+      properties:
+        title:
+          type: string
+        courseId:
+          type: string
+          nullable: true
+        learningSpaceId:
+          type: string
+          nullable: true
+        sourceResourceId:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+    UpdateNoteRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        courseId:
+          type: string
+          nullable: true
+        learningSpaceId:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - draft
+          - active
+          - archived
+    CreateNoteBlockRequest:
+      type: object
+      required:
+      - content
+      properties:
+        blockType:
+          type: string
+          enum:
+          - paragraph
+          - heading
+          - quote
+          - todo
+          - code
+          - table
+          - ai_summary
+          - thinking
+          - memory_cards
+          - formula
+          - annotation
+          - relations
+          default: paragraph
+        content:
+          type: string
+        position:
+          type: integer
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties: true
+    CreateNoteRelationRequest:
+      type: object
+      required:
+      - targetNoteId
+      - relationType
+      properties:
+        targetNoteId:
+          type: string
+        relationType:
+          type: string
+          enum:
+          - backlink
+          - reference
+          - prerequisite
+          - related
+        context:
+          type: string
+          nullable: true
+    NoteResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          $ref: '#/components/schemas/Note'
+    NoteListResponse:
+      type: object
+      required:
+      - data
+      - pagination
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Note'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    NoteDetailResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          type: object
+          required:
+          - note
+          - blocks
+          - relations
+          properties:
+            note:
+              $ref: '#/components/schemas/Note'
+            blocks:
+              type: array
+              items:
+                $ref: '#/components/schemas/NoteBlock'
+            relations:
+              type: array
+              items:
+                $ref: '#/components/schemas/NoteRelation'
+    NoteBlockResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/NoteBlock'
+    NoteRelationResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/NoteRelation'
+    MemoryCard:
+      type: object
+      required:
+      - id
+      - ownerId
+      - front
+      - back
+      - status
+      - dueAt
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        front:
+          type: string
+        back:
+          type: string
+        sourceNoteId:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - active
+          - suspended
+          - archived
+        dueAt:
+          type: string
+          format: date-time
+    CreateMemoryCardRequest:
+      type: object
+      required:
+      - front
+      - back
+      properties:
+        front:
+          type: string
+        back:
+          type: string
+        sourceNoteId:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+    CreateReviewRecordRequest:
+      type: object
+      required:
+      - grade
+      properties:
+        grade:
+          type: string
+          enum:
+          - again
+          - hard
+          - good
+          - easy
+    ReviewRecord:
+      type: object
+      required:
+      - id
+      - cardId
+      - ownerId
+      - grade
+      - reviewedAt
+      - nextDueAt
+      - intervalDays
+      properties:
+        id:
+          type: string
+        cardId:
+          type: string
+        ownerId:
+          type: string
+        grade:
+          type: string
+          enum:
+          - again
+          - hard
+          - good
+          - easy
+        reviewedAt:
+          type: string
+          format: date-time
+        nextDueAt:
+          type: string
+          format: date-time
+        intervalDays:
+          type: integer
+    MemoryCardResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/MemoryCard'
+    MemoryCardListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MemoryCard'
+    ReviewRecordResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ReviewRecord'
+    MemoryLibraryItem:
+      type: object
+      properties:
+        noteId:
+          type: string
+        noteTitle:
+          type: string
+        courseName:
+          type: string
+        status:
+          type: string
+          enum: [none, active, completed]
+        totalCards:
+          type: integer
+        reviewedCards:
+          type: integer
+        dueCards:
+          type: integer
+        nextReviewAt:
+          type: string
+          format: date-time
+          nullable: true
+        daysUntilNext:
+          type: integer
+          nullable: true
+        cycle:
+          type: string
+          enum: [cram, standard, longterm]
+          nullable: true
+        lastReviewAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    MemoryLibraryResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MemoryLibraryItem'
+    GenerateCardsRequest:
+      type: object
+      properties:
+        maxCards:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 10
+    GeneratedCard:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [概念定义, 填空卡片, 辨析卡片, 翻转问答]
+        front:
+          type: string
+        back:
+          type: string
+        difficulty:
+          type: string
+          enum: [简单, 中等, 困难]
+        status:
+          type: string
+    GenerateCardsData:
+      type: object
+      properties:
+        noteId:
+          type: string
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeneratedCard'
+    GenerateCardsResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/GenerateCardsData'
+    CycleSetRequest:
+      type: object
+      required:
+      - cycle
+      properties:
+        cycle:
+          type: string
+          enum: [cram, standard, longterm]
+    CycleSetResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            noteId:
+              type: string
+            cycle:
+              type: string
+    CompleteReviewResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            noteId:
+              type: string
+            reviewedCards:
+              type: integer
+    CreateThinkingSessionRequest:
+      type: object
+      required:
+      - noteId
+      - goal
+      properties:
+        noteId:
+          type: string
+        goal:
+          type: string
+    ThinkingSession:
+      type: object
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        noteId:
+          type: string
+        goal:
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - completed
+          - canceled
+    CreateThinkingPromptRequest:
+      type: object
+      required:
+      - content
+      properties:
+        promptType:
+          type: string
+          enum:
+          - socratic
+          - gap_check
+          - counter_example
+          - revision
+        content:
+          type: string
+    ThinkingPrompt:
+      type: object
+      properties:
+        id:
+          type: string
+        sessionId:
+          type: string
+        promptType:
+          type: string
+          enum:
+          - socratic
+          - gap_check
+          - counter_example
+          - revision
+        content:
+          type: string
+    ThinkingSessionResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ThinkingSession'
+    ThinkingPromptResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ThinkingPrompt'
+    RevisionSuggestion:
+      type: object
+      properties:
+        id:
+          type: string
+        sessionId:
+          type: string
+        noteId:
+          type: string
+        summary:
+          type: string
+        suggestedBlocks:
+          type: array
+          items:
+            type: string
+    CreateRevisionSuggestionRequest:
+      type: object
+      required:
+      - summary
+      properties:
+        summary:
+          type: string
+        suggestedBlocks:
+          type: array
+          items:
+            type: string
+    ThinkingSessionDetailResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          required:
+          - session
+          - prompts
+          - suggestions
+          properties:
+            session:
+              $ref: '#/components/schemas/ThinkingSession'
+            prompts:
+              type: array
+              items:
+                $ref: '#/components/schemas/ThinkingPrompt'
+            suggestions:
+              type: array
+              items:
+                $ref: '#/components/schemas/RevisionSuggestion'
+    RevisionSuggestionResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/RevisionSuggestion'
+    CreateFeynmanSessionRequest:
+      type: object
+      required:
+      - conceptName
+      - explanation
+      properties:
+        conceptId:
+          type: string
+          nullable: true
+        noteId:
+          type: string
+          nullable: true
+        conceptName:
+          type: string
+        explanation:
+          type: string
+    FeynmanSession:
+      type: object
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        conceptId:
+          type: string
+          nullable: true
+        noteId:
+          type: string
+          nullable: true
+        conceptName:
+          type: string
+        explanation:
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - evaluated
+          - canceled
+    CreateFeynmanEvaluationRequest:
+      type: object
+      required:
+      - score
+      - feedback
+      properties:
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        feedback:
+          type: string
+        followUpQuestions:
+          type: array
+          items:
+            type: string
+    FeynmanEvaluation:
+      type: object
+      properties:
+        id:
+          type: string
+        sessionId:
+          type: string
+        score:
+          type: integer
+        feedback:
+          type: string
+        followUpQuestions:
+          type: array
+          items:
+            type: string
+    FeynmanQuestion:
+      type: object
+      properties:
+        id:
+          type: string
+        sessionId:
+          type: string
+        question:
+          type: string
+    CreateFeynmanQuestionRequest:
+      type: object
+      required:
+      - question
+      properties:
+        question:
+          type: string
+    FeynmanSessionDetailResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          required:
+          - session
+          - questions
+          properties:
+            session:
+              $ref: '#/components/schemas/FeynmanSession'
+            questions:
+              type: array
+              items:
+                $ref: '#/components/schemas/FeynmanQuestion'
+            evaluation:
+              $ref: '#/components/schemas/FeynmanEvaluation'
+              nullable: true
+    FeynmanQuestionResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/FeynmanQuestion'
+    FeynmanSessionResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/FeynmanSession'
+    FeynmanEvaluationResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/FeynmanEvaluation'
+    Concept:
+      type: object
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        name:
+          type: string
+        courseId:
+          type: string
+          nullable: true
+        sourceNoteIds:
+          type: array
+          items:
+            type: string
+    ConceptRelation:
+      type: object
+      properties:
+        id:
+          type: string
+        sourceConceptId:
+          type: string
+        targetConceptId:
+          type: string
+        relationType:
+          type: string
+          enum:
+          - prerequisite
+          - part_of
+          - contrasts_with
+          - related_to
+        weight:
+          type: number
+    MasteryState:
+      type: object
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        conceptId:
+          type: string
+        level:
+          type: string
+          enum:
+          - unknown
+          - learning
+          - familiar
+          - mastered
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        evidence:
+          type: array
+          items:
+            type: string
+    UpsertConceptRequest:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+        courseId:
+          type: string
+          nullable: true
+        sourceNoteIds:
+          type: array
+          items:
+            type: string
+    CreateConceptRelationRequest:
+      type: object
+      required:
+      - sourceConceptId
+      - targetConceptId
+      - relationType
+      properties:
+        sourceConceptId:
+          type: string
+        targetConceptId:
+          type: string
+        relationType:
+          type: string
+          enum:
+          - prerequisite
+          - part_of
+          - contrasts_with
+          - related_to
+        weight:
+          type: number
+          default: 1
+    UpdateMasteryStateRequest:
+      type: object
+      required:
+      - conceptId
+      - level
+      - confidence
+      properties:
+        conceptId:
+          type: string
+        level:
+          type: string
+          enum:
+          - unknown
+          - learning
+          - familiar
+          - mastered
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        evidence:
+          type: array
+          items:
+            type: string
+    ConceptResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Concept'
+    ConceptRelationResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ConceptRelation'
+    MasteryStateResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/MasteryState'
+    KnowledgeGraphResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          required:
+          - concepts
+          - relations
+          properties:
+            concepts:
+              type: array
+              items:
+                $ref: '#/components/schemas/Concept'
+            relations:
+              type: array
+              items:
+                $ref: '#/components/schemas/ConceptRelation'
+    SharedAsset:
+      type: object
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        title:
+          type: string
+        assetType:
+          type: string
+          enum:
+          - note
+          - knowledge_graph
+          - thinking_chain
+          - feynman_session
+          - review_template
+        sourceId:
+          type: string
+        visibility:
+          type: string
+          enum:
+          - private
+          - course
+          - public
+        description:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+    CreateSharedAssetRequest:
+      type: object
+      required:
+      - title
+      - assetType
+      - sourceId
+      properties:
+        title:
+          type: string
+        assetType:
+          type: string
+          enum:
+          - note
+          - knowledge_graph
+          - thinking_chain
+          - feynman_session
+          - review_template
+        sourceId:
+          type: string
+        visibility:
+          type: string
+          enum:
+          - private
+          - course
+          - public
+          default: public
+        description:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+    CreateCollectionRequest:
+      type: object
+      properties:
+        noteId:
+          type: string
+          nullable: true
+    Collection:
+      type: object
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        assetId:
+          type: string
+        noteId:
+          type: string
+          nullable: true
+    SharedAssetResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/SharedAsset'
+    SharedAssetListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SharedAsset'
+    CollectionResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Collection'
+    CommunityPost:
+      type: object
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        assetId:
+          type: string
+        body:
+          type: string
+    CreateCommunityPostRequest:
+      type: object
+      required:
+      - body
+      properties:
+        body:
+          type: string
+    CommunityPostResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CommunityPost'
+    CommunityInteraction:
+      type: object
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        targetId:
+          type: string
+        interactionType:
+          type: string
+          enum:
+          - like
+          - comment
+        body:
+          type: string
+          nullable: true
+    CreateCommunityInteractionRequest:
+      type: object
+      required:
+      - targetId
+      - interactionType
+      properties:
+        targetId:
+          type: string
+        interactionType:
+          type: string
+          enum:
+          - like
+          - comment
+        body:
+          type: string
+          nullable: true
+    CommunityInteractionResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CommunityInteraction'
+    ContributionRecord:
+      type: object
+      properties:
+        id:
+          type: string
+        ownerId:
+          type: string
+        action:
+          type: string
+        targetId:
+          type: string
+        points:
+          type: integer
+    ContributionRecordListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContributionRecord'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    CreateWorkerTaskRequest:
+      type: object
+      required:
+      - taskType
+      - payload
+      properties:
+        taskType:
+          type: string
+          enum:
+          - resource_parse
+          - memory_card_generation
+          - feynman_evaluation
+          - knowledge_graph_update
+          - community_indexing
+        payload:
+          type: object
+    WorkerTask:
+      type: object
+      properties:
+        taskId:
+          type: string
+        status:
+          type: string
+          enum:
+          - queued
+          - running
+          - succeeded
+          - failed
+          - canceled
+    WorkerTaskResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/WorkerTask'
+    LearningSpace:
+      type: object
+      required:
+      - id
+      - courseId
+      - name
+      - position
+      - ownerId
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+        courseId:
+          type: string
+        parentId:
+          type: string
+          nullable: true
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        position:
+          type: integer
+        ownerId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    LearningSpaceCreateRequest:
+      type: object
+      required:
+      - name
+      properties:
+        parentId:
+          type: string
+          nullable: true
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        position:
+          type: integer
+          default: 0
+    LearningSpaceUpdateRequest:
+      type: object
+      properties:
+        parentId:
+          type: string
+          nullable: true
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        position:
+          type: integer
+    LearningSpaceResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          ? ''
+          : '#/components/schemas/LearningSpace'
+    LearningSpaceListResponse:
+      type: object
+      required:
+      - data
+      - pagination
+      properties:
+        data:
+          type: array
+          items:
+            ? ''
+            : '#/components/schemas/LearningSpace'
+        pagination:
+          ? ''
+          : '#/components/schemas/Pagination'
