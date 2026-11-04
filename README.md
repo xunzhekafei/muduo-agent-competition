@@ -1,595 +1,142 @@
-# Muduo - AI 辅助学习平台
+# 木铎 · AI 学习导师智能体
 
-## 项目简介
-
-**Muduo** 是一个 **AI 辅助学习平台**，目标是搭建一个完整学习工作流。
-
-简单来说，这是一个帮助学生更好地学习和记忆的工具。
-
----
-
-## 核心功能
-
-### 四大核心模式
-
-| 模式 | 说明 |
-|------|------|
-| **速记模式** | 快速记录课堂重点，支持录音跟进、时间流沉淀、快捷标签 |
-| **思考模式** | AI 引导深度思考，苏格拉底式提问促进理解 |
-| **记忆卡片** | 从笔记和资源中生成复习卡片，支持复习计划 |
-| **费曼练习** | 用自己的话解释概念，系统给出追问和评估 |
-
-### 三大支撑体系
-
-| 体系 | 说明 |
-|------|------|
-| **资源转笔记** | 上传 PDF、图片、音频、视频等，系统解析生成结构化笔记 |
-| **笔记管理** | 按课程、章节、知识点组织笔记，沉淀知识树和知识图谱 |
-| **共享社区** | 共享优质笔记、思考链路、复习模板，支持收藏和引用 |
+> 面向大学生 / 考研学生学习场景的 AI Agent：
+> **听懂需求 → 自主规划 → 调用学习工具 → 记住你的掌握度 → 陪你把「记录 → 理解 → 记住 → 输出」的学习闭环走完。**
+>
+> 它不是问答机器人——你说一句模糊的话，它自己判断该做什么，并把事情做完。
 
 ---
 
-## 技术栈
+## 它和「AI 问答助手」的区别
 
-### 前端
-| 技术           | 版本     | 用途                  |
-| ------------ | ------ | ------------------- |
-| React        | 18.2.0 | 【骨架】前端界面框架          |
-| Vite         | 5.0.8  | 【运行工具】前端「运行 + 构建工具」 |
-| Tailwind CSS | 3.4.0  | 【化妆】页面外观样式框架        |
-| React Router | 6.22.3 | 【导航】「页面跳转、导航」路由管理   |
+| 维度 | 普通问答助手 | 木铎 Agent |
+|------|-------------|-----------|
+| 工具调用 | 只能用模型自己的知识 | **14 个学习工具**（查笔记/知识库/记忆卡/SM-2/费曼/苏格拉底…） |
+| 自主编排 | 一问一答 | **ReAct 循环**：一次请求可连续规划与调用多个工具，直到任务完成 |
+| 记忆 | 会话结束即忘记 | **长期记忆**：薄弱笔记、待复习卡片、最近练习自动注入上下文 |
+| 知识来源 | 通用知识，容易幻觉 | **基于你自己的笔记**：分块向量化检索（RAG）后作答 |
+| 可验证性 | 黑盒 | **工具调用轨迹可见**：每一步调用什么、传了什么、返回什么都展示在界面上 |
 
-### 后端
-| 技术         | 版本     | 用途                                    |
-| ---------- | ------ | ------------------------------------- |
-| Python     | 3.11+  | 编程语言                                  |
-| FastAPI    | 0.115+ | Python 写后端接口的 Web 框架                  |
-| SQLAlchemy | 2.0+   | ORM——把 Python 代码自动翻译成 SQL 代码，交给数据库执行】 |
-| Alembic    | 1.13+  | 管理数据库结构 ：建表、改表、版本控制                   |
-
----
-
-## 项目结构
+## 学习闭环
 
 ```
-Muduo-notes-v1/
-├── frontend/                        # ========== 前端应用 ==========
-│   ├── dist/                       # 构建产物目录（npm run build输出）
-│   ├── src/
-│   │   ├── api/                    # API封装（与后端通信）
-│   │   ├── app/                    # 应用入口+路由配置
-│   │   ├── features/               # 业务功能模块（10个）
-│   │   ├── layouts/                 # 布局组件
-│   │   ├── mocks/                   # Mock数据
-│   │   ├── pages/                  # 页面组件（路由入口）
-│   │   ├── shared/                 # 共享组件和常量
-│   │   ├── styles/                 # 全局样式
-│   │   ├── main.jsx                # 前端入口
-│   │   └── README.md               # 前端说明文档
-│   ├── index.html                  # HTML入口
-│   ├── package.json                # 前端依赖
-│   ├── vite.config.js              # Vite构建配置
-│   ├── tailwind.config.js          # Tailwind配置
-│   └── BACKEND_API_FOR_FRONTEND.md # API参考文档
-│
-├── backend/                         # ========== 后端应用 ==========
-│   ├── app/
-│   │   ├── api/v1/                 # API路由层（版本1）
-│   │   ├── core/                   # 核心基础设施（认证/配置/错误处理等）
-│   │   ├── db/                     # 数据库层（ORM/模型/会话）
-│   │   ├── integrations/           # 外部服务集成（LLM/OCR/ASR等）
-│   │   ├── modules/                # 业务模块（12个）
-│   │   ├── schemas/                # Pydantic数据模型
-│   │   ├── services/               # 跨模块工作流编排
-│   │   ├── workers/                # 异步任务处理器
-│   │   └── main.py                 # FastAPI应用入口
-│   ├── migrations/                 # Alembic数据库迁移
-│   │   └── versions/               # 迁移版本历史
-│   ├── tests/                      # 测试文件
-│   ├── alembic.ini                 # Alembic配置
-│   ├── pyproject.toml              # Python项目配置
-│   └── seed_data.py                # 数据初始化脚本
-│
-├── contracts/                       # ========== API契约 ==========
-│   ├── openapi.yaml                # OpenAPI规范（接口文档）
-│   ├── enums.md                    # 枚举定义
-│   ├── errors.md                   # 错误码定义
-│   └── events.md                   # 事件定义
-│
-├── docs/                            # ========== 项目文档 ==========
-│   ├── architecture/                # 架构文档
-│   │   ├── backend-overview.md
-│   │   ├── database.md
-│   │   ├── cross-module-workflows.md
-│   │   └── backend-beginner-guide.md
-│   ├── api/                        # API文档
-│   │   ├── backend-api-guide.md
-│   │   └── resource-note-workflow.md
-│   ├── adr/                        # 架构决策记录
-│   │   └── 0001-external-provider-abstraction.md
-│   └── product/
-│       └── feature-map.md          # 功能地图
-│
-├── infra/                           # ========== 基础设施 ==========
-│   ├── docker/
-│   │   └── backend.Dockerfile      # 后端Docker镜像
-│   └── nginx/
-│       └── muduo.conf              # Nginx配置
-│
-├── scripts/                         # ========== 开发脚本 ==========
-│   ├── backend_dev.sh              # 后端开发启动脚本
-│   └── backend_check.sh            # 后端检查脚本
-│
-├── .env.example                     # 环境变量示例
-├── .gitignore                       # Git忽略配置
-├── README.md                        # 项目主文档
-├── BUILD.md                         # 构建规范
-├── CONTRIBUTING.md                  # 贡献指南
-├── Makefile                         # Make命令集合
-├── docker-compose.dev.yml           # Docker开发环境
-├── old_plan/                        # 历史计划、旧分工和旧协作资料
-└── ai_space/                        # AI过程文档和接手梳理报告
+记录 ──────────► 理解 ──────────► 记住 ──────────► 输出
+create_note      ask_thinking_question   generate_memory_cards   run_feynman
+search_notes     (苏格拉底式追问)         list_due_cards          feynman_add_question
+                 search_knowledge         schedule_review (SM-2)  evaluate_feynman
+                 (知识库 RAG)
+                       ▲                                          │
+                       └──────────── get_mastery / get_overview ◄─┘
+                              （掌握度画像驱动下一轮规划）
 ```
 
-### 前端目录 (`frontend/`)
+## Agent 工作流程
 
 ```
-frontend/
-├── dist/                              # 构建输出目录
-│   └── index.html
-├── src/
-│   ├── api/                           # API封装和客户端
-│   │   ├── client.js                  # HTTP客户端配置
-│   │   ├── community.js               # 社区模块API
-│   │   ├── courses.js                 # 课程模块API
-│   │   ├── dashboard.js               # 仪表盘API
-│   │   ├── feynman.js                 # 费曼模式API
-│   │   ├── index.js                   # API统一导出
-│   │   ├── memory.js                  # 记忆模式API
-│   │   ├── notes.js                   # 笔记模块API
-│   │   ├── thinking.js               # 思考模式API
-│   │   └── users.js                   # 用户模块API
-│   ├── app/                           # 应用入口
-│   │   └── App.jsx                    # 根组件+路由配置
-│   ├── features/                      # 业务功能模块
-│   │   ├── community/
-│   │   │   └── Community.jsx          # 共享社区
-│   │   ├── courses/
-│   │   │   └── Courses.jsx           # 课程管理
-│   │   ├── dashboard/
-│   │   │   └── Dashboard.jsx          # 学习仪表盘
-│   │   ├── feynman/
-│   │   │   └── FeynmanMode.jsx       # 费曼练习
-│   │   ├── memory/
-│   │   │   └── MemoryMode.jsx        # 记忆卡片
-│   │   ├── note-management/           # 笔记管理（子模块较多）
-│   │   │   ├── AIAsidePanel.jsx      # AI辅助面板
-│   │   │   ├── FileExplorer.jsx      # 文件浏览器
-│   │   │   ├── KnowledgeTree.jsx     # 知识树
-│   │   │   ├── NoteDetail.jsx        # 笔记详情
-│   │   │   ├── NoteList.jsx          # 笔记列表
-│   │   │   ├── NoteManagement.jsx    # 笔记管理主页
-│   │   │   └── NoteWorkspace.jsx     # 笔记编辑工作区
-│   │   ├── quick-notes/
-│   │   │   └── QuickNotes.jsx        # 速记模式
-│   │   ├── resource-notes/
-│   │   │   └── ResourceToNotes.jsx   # 资源转笔记
-│   │   ├── settings/
-│   │   │   └── Settings.jsx           # 系统设置
-│   │   └── thinking/
-│   │       └── ThinkingMode.jsx      # 思考模式
-│   ├── layouts/                       # 布局组件
-│   │   ├── Layout.jsx                 # 主布局
-│   │   ├── Sidebar.jsx                # 侧边栏
-│   │   └── Topbar.jsx                 # 顶部栏
-│   ├── mocks/                         # Mock数据
-│   │   ├── index.js                   # Mock配置
-│   │   └── mockData.jsx               # 模拟数据
-│   ├── pages/                         # 页面级组件
-│   │   ├── CommunityPage.jsx
-│   │   ├── CoursesPage.jsx
-│   │   ├── DashboardPage.jsx
-│   │   ├── FeynmanModePage.jsx
-│   │   ├── MemoryModePage.jsx
-│   │   ├── NoteManagementPage.jsx
-│   │   ├── QuickNotesPage.jsx
-│   │   ├── ResourceToNotesPage.jsx
-│   │   ├── SettingsPage.jsx
-│   │   └── ThinkingModePage.jsx
-│   ├── shared/                        # 共享组件和常量
-│   │   ├── components/                # 共享UI组件
-│   │   │   ├── BarChart.jsx           # 柱状图
-│   │   │   ├── FilePicker.jsx         # 文件选择器
-│   │   │   ├── KnowledgeGraphCard.jsx # 知识图谱卡片
-│   │   │   ├── Logo.jsx               # Logo组件
-│   │   │   ├── ModeCard.jsx           # 模式卡片
-│   │   │   ├── NoteCard.jsx           # 笔记卡片
-│   │   │   ├── SaveFolderPicker.jsx   # 保存文件夹选择器
-│   │   │   ├── StatCard.jsx           # 统计卡片
-│   │   │   ├── StatCardLarge.jsx      # 大统计卡片
-│   │   │   ├── TaskCard.jsx           # 任务卡片
-│   │   │   └── index.js               # 统一导出
-│   │   └── constants.js               # 全局常量
-│   ├── styles/                        # 全局样式
-│   │   └── index.css                  # Tailwind入口样式
-│   ├── main.jsx                       # 前端入口
-│   └── README.md                      # 本目录说明文档
-├── BACKEND_API_FOR_FRONTEND.md        # 后端API文档
-├── index.html                         # HTML入口
-├── package.json                       # 依赖配置
-├── package-lock.json                  # 依赖锁定
-├── postcss.config.js                  # PostCSS配置
-├── tailwind.config.js                 # Tailwind配置
-└── vite.config.js                     # Vite配置
+用户消息
+  → 注入学习者状态（薄弱点 / 待复习 / 最近练习）
+  → 模型规划（要不要调工具、调哪个）
+  → 执行工具 → 观察结果 → 再规划 ……（最多 8 步，180 秒超时）
+  → 最终答复 + 完整工具调用轨迹（SSE 实时推送）
 ```
 
-### 后端目录 (`backend/`)
+## 14 个工具
 
-```
-backend/
-├── app/
-│   ├── __init__.py
-│   ├── main.py                      # FastAPI应用入口
-│   ├── api/                         # API路由层
-│   │   ├── __init__.py
-│   │   └── v1/
-│   │       ├── __init__.py
-│   │       ├── router.py            # 路由聚合
-│   │       └── routes.py            # 系统路由
-│   ├── core/                        # 核心基础设施
-│   │   ├── __init__.py
-│   │   ├── auth.py                  # JWT认证
-│   │   ├── config.py                # 配置管理
-│   │   ├── errors.py                # 错误处理
-│   │   ├── logging.py               # 日志配置
-│   │   ├── middleware.py            # 中间件
-│   │   ├── responses.py             # 统一响应格式
-│   │   └── security.py              # 安全工具
-│   ├── db/                          # 数据库层
-│   │   ├── __init__.py
-│   │   ├── base.py                  # SQLAlchemy基类
-│   │   ├── ids.py                   # ID生成策略
-│   │   ├── mixins.py                # 模型混入
-│   │   ├── models.py                # 模型聚合导出
-│   │   ├── session.py               # 数据库会话
-│   │   └── types.py                 # 自定义类型
-│   ├── integrations/                # 外部服务集成
-│   │   ├── __init__.py
-│   │   ├── asr.py                   # 语音识别
-│   │   ├── embedding.py             # 文本嵌入
-│   │   ├── llm.py                   # 大语言模型
-│   │   ├── ocr.py                   # 文字识别
-│   │   ├── registry.py              # 服务注册中心
-│   │   └── storage.py               # 对象存储
-│   ├── modules/                      # 业务模块
-│   │   ├── ai_tasks/                # AI任务管理
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── routes.py
-│   │   │   └── service.py
-│   │   ├── auth/                    # 认证模块
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── routes.py
-│   │   │   └── service.py
-│   │   ├── community/               # 社区模块
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── README.md
-│   │   │   ├── repository.py
-│   │   │   ├── routes.py
-│   │   │   └── service.py
-│   │   ├── courses/                 # 课程模块
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── routes.py
-│   │   │   └── service.py
-│   │   ├── dashboard/               # 仪表盘模块
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── routes.py
-│   │   │   └── service.py
-│   │   ├── feynman/                 # 费曼练习模块
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── repository.py
-│   │   │   ├── routes.py
-│   │   │   └── service.py
-│   │   ├── import_export/           # 导入导出模块
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── README.md
-│   │   │   ├── routes.py
-│   │   │   └── service.py
-│   │   ├── knowledge_graph/         # 知识图谱模块
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── repository.py
-│   │   │   ├── routes.py
-│   │   │   └── service.py
-│   │   ├── memory/                  # 记忆卡片模块
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── repository.py
-│   │   │   ├── routes.py
-│   │   │   └── service.py
-│   │   ├── notes/                   # 笔记模块
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── repository.py
-│   │   │   ├── routes.py
-│   │   │   └── service.py
-│   │   ├── resources/               # 资源管理模块
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── routes.py
-│   │   │   └── service.py
-│   │   ├── thinking/                # 思考模式模块
-│   │   │   ├── __init__.py
-│   │   │   ├── models.py
-│   │   │   ├── repository.py
-│   │   │   ├── routes.py
-│   │   │   └── service.py
-│   │   └── users/                   # 用户模块
-│   │       ├── __init__.py
-│   │       ├── models.py
-│   │       ├── routes.py
-│   │       └── service.py
-│   ├── schemas/                      # Pydantic数据模型
-│   │   ├── __init__.py
-│   │   ├── ai_tasks.py
-│   │   ├── auth.py
-│   │   ├── common.py
-│   │   ├── community.py
-│   │   ├── courses.py
-│   │   ├── dashboard.py
-│   │   ├── enums.py
-│   │   ├── feynman.py
-│   │   ├── import_export.py
-│   │   ├── knowledge_graph.py
-│   │   ├── memory.py
-│   │   ├── notes.py
-│   │   ├── resources.py
-│   │   ├── thinking.py
-│   │   ├── users.py
-│   │   └── workflows.py
-│   ├── services/                     # 跨模块服务编排
-│   │   ├── __init__.py
-│   │   ├── resource_note_workflow.py # 资源转笔记工作流
-│   │   └── routes.py
-│   └── workers/                      # 异步任务处理器
-│       ├── __init__.py
-│       ├── handlers.py
-│       ├── models.py
-│       └── registry.py
-├── migrations/                        # Alembic数据库迁移
-│   ├── README.md
-│   ├── env.py
-│   ├── script.py.mako
-│   └── versions/
-│       ├── 0001_initial_chaiyifan_models.py
-│       ├── 0002_zhangyuxuan_learning_modules.py
-│       ├── 0003_extend_note_block_types.py
-│       ├── 0004_add_note_mastery.py
-│       ├── 0005_learning_activities.py
-│       └── 0006_study_logs.py
-├── tests/                            # 测试文件
-│   ├── test_ai_tasks_api.py
-│   ├── test_auth_users_api.py
-│   ├── test_core.py
-│   ├── test_courses_api.py
-│   ├── test_database_models.py
-│   ├── test_integrations.py
-│   ├── test_knowledge_community_workers.py
-│   ├── test_notes_memory.py
-│   ├── test_resource_workflows_api.py
-│   ├── test_resources_import_export_api.py
-│   └── test_thinking_feynman.py
-├── alembic.ini                       # Alembic配置
-├── pyproject.toml                    # Python项目配置
-└── seed_data.py                      # 数据初始化脚本
-```
-
----
-
-### 关键文件说明
-
-| 文件                             | 功能                |
-| ------------------------------ | ----------------- |
-| `frontend/src/main.jsx`        | 前端入口，初始化React应用   |
-| `frontend/src/App.jsx`         | 根组件，路由配置          |
-| `backend/app/main.py`          | 后端入口，创建FastAPI应用  |
-| `backend/app/core/config.py`   | 配置管理（环境变量、数据库连接等） |
-| `backend/app/db/base.py`       | SQLAlchemy基础模型    |
-| `backend/app/api/v1/router.py` | API版本路由聚合         |
-
----
-
-## 启动方式
-
-### 前端启动
-
-```bash
-# 1. 进入前端目录
-cd frontend
-
-# 2. 安装依赖（首次运行或依赖变更后）
-npm install
-
-# 3. 启动开发服务器
-npm run dev
-
-```
-
-### 后端启动
-
-配置Python解释器：选择 Python 3.11+ 的版本
-```bash
-cd backend
-pip install -e ".[dev]"  # 安装项目依赖
-alembic upgrade head   # 数据库迁移
-uvicorn app.main:app --reload --port 8000  # 启动服务，测试：http://localhost:8000/docs
-```
-
-
-## 常用命令
-
-### 前端命令
-
-| 命令 | 说明 |
-|------|------|
-| `npm install` | 安装依赖 |
-| `npm run dev` | 启动开发服务器 |
-| `npm run build` | 构建生产版本 |
-| `npm run preview` | 预览生产构建 |
-
-### 后端命令
-
-| 命令 | 说明 |
-|------|------|
-| `pip install -e ".[dev]"` | 安装依赖（包含开发依赖） |
-| `alembic upgrade head` | 执行数据库迁移 |
-| `alembic current` | 查看当前迁移版本 |
-| `alembic history` | 查看迁移历史 |
-| `alembic revision --autogenerate -m "描述"` | 创建新迁移 |
-| `uvicorn app.main:app --reload` | 启动开发服务器 |
-| `pytest` | 运行测试 |
-
----
-
-## 数据初始化
-
-### 创建默认用户
-
-```bash
-cd backend
-python seed_data.py
-```
-
-这会创建：
-- 开发测试账号 `dev@muduo.local`
-- 示例课程和笔记数据
-
----
-
-## Mock 数据说明
-
-**什么是 Mock 数据？**
-
-Mock 数据是在前后端联调之前，前端使用假的模拟数据来开发和测试界面功能。
-
-**为什么需要 Mock？**
-
-```
-前端开发速度快，后端 API 还没完成
-    ↓
-前端无法进行接口联调
-    ↓
-使用 Mock 数据先开发 UI
-```
-
-**项目中的 Mock 位置**：
-- `frontend/src/mocks/mockData.jsx` - 模拟数据定义
-- `frontend/src/mocks/index.js` - Mock 开关配置
-
----
-
-## 开发建议
-
-### 1. 先跑通项目
-
-按照「快速启动」步骤，确保前后端都能正常启动。
-
-### 2. 熟悉代码结构
-
-```
-前端代码入口：frontend/src/main.jsx
-    ↓
-App.jsx（路由配置）
-    ↓
-pages/（页面入口）
-    ↓
-features/（具体功能实现）
-```
-
-```
-后端代码入口：backend/app/main.py
-    ↓
-router.py（路由聚合）
-    ↓
-modules/模块名/routes.py（具体接口）
-    ↓
-modules/模块名/service.py（业务逻辑）
-```
-
-### 3. 从简单模块入手
-
-推荐顺序：
-1. `users` 模块 - 用户管理，最简单
-2. `courses` 模块 - 课程管理
-3. `notes` 模块 - 笔记管理
-4. `memory/thinking/feynman` - 核心功能
-
-### 4. 阅读文档
-
-| 文档 | 位置 | 说明 |
+| 分组 | 工具 | 作用 |
 |------|------|------|
-| API 文档 | `frontend/BACKEND_API_FOR_FRONTEND.md` | 接口说明 |
-| 架构文档 | `docs/architecture/` | 后端架构说明 |
-| 产品功能 | `docs/product/feature-map.md` | 功能地图 |
-| 构建规范 | `BUILD.md` | 开发规范 |
+| 记录与检索 | `list_courses` `search_notes` `get_note` `create_note` | 课程/笔记的发现与读写 |
+| 知识库 | `search_knowledge` | 分块级语义检索，返回原文片段 |
+| 理解 | `ask_thinking_question` | 苏格拉底式追问（socratic / gap_check / counter_example / revision） |
+| 理解 | `run_feynman` `feynman_add_question` `evaluate_feynman` | 费曼讲解记录 → 追问 → 评分评估 |
+| 记忆 | `generate_memory_cards` `list_due_cards` `schedule_review` | 卡片生成、到期查询、SM-2 排期 |
+| 规划 | `get_overview` `get_mastery` | 学习总览、掌握度画像 |
 
----
+工具定义（Function Calling Schema）见 `backend/app/agent/schemas.py`，实现见 `backend/app/agent/tools.py`——
+Web 端与 CLI 端共用同一套实现与系统提示词（单一来源）。
 
-## 常见问题
+## 系统架构
 
-### Q1：端口被占用
-
-```bash
-# 后端换一个端口
-uvicorn app.main:app --reload --port 8001
-
-# 前端端口通常不需要改，Vite 会自动选择可用端口
+```
+React 前端（对话页 + 工具轨迹 UI）
+   │  SSE: /api/v1/agent/chat/stream
+   ▼
+FastAPI 后端
+   ├─ orchestrator：ReAct 循环（步数/超时/trace/收尾）
+   ├─ memory：学习者状态注入（长期记忆）
+   ├─ tools ×14：直接调用各业务 service 层
+   └─ knowledge_base：笔记分块 → 向量化 → SQLite 向量库 → 余弦检索
+   ▼
+SQLite（笔记/记忆卡/费曼/思考/知识块）
+   ▼
+模型服务：智谱 GLM-4.5（工具调用）+ embedding-3（向量）；DeepSeek 备用；mock 降级
 ```
 
-### Q2：数据库迁移失败
+学习科学方法论内置其中：**费曼学习法**（以教代学）、**苏格拉底式提问**（认知冲突）、
+**SM-2 间隔重复**（记忆曲线）、**掌握度画像**（数据驱动规划）。
+
+## 快速开始（本地）
 
 ```bash
-# 删除数据库文件，重新迁移
-rm backend/muduo_dev.sqlite3
-alembic upgrade head
+# 后端
+cd backend
+python -m venv venv && venv/bin/pip install -r requirements.txt   # Windows: venv\Scripts\pip
+cp .env.example .env        # 填入 ZHIPU_API_KEY / DEEPSEEK_API_KEY
+python seed_data.py          # 构建演示数据
+python scripts/seed_demo.py  # 匿名演示账号 + 知识库索引（幂等）
+venv/bin/uvicorn app.main:app --reload --port 8000
+
+# 前端
+cd frontend
+npm install && npm run dev   # http://localhost:3000（已配置 /api 代理）
 ```
 
-### Q3：找不到模块
+打开对话页，输入「帮我安排今天的复习」即可体验完整 Agent 链路。
 
-确保在 `backend` 目录下执行命令，且虚拟环境已激活。
+## 命令行版学习导师（可选）
 
-### Q4：前端无法请求后端
+`cli-agent/` 是本项目的 Agent 扩展，可接到一个 Claude Code 风格的 CLI 壳子上运行，
+说明见 [cli-agent/README.md](cli-agent/README.md)。
 
-检查 `.env` 或 `.env.local` 文件：
+## 测试与实验
 
 ```bash
-VITE_API_BASE_URL=http://localhost:8000
+cd backend && python -m pytest tests/ -q      # 94 个离线测试
+python experiments/run_experiments.py         # Agent 任务质量实验（真实 LLM）
+python experiments/sm2_simulation.py          # SM-2 记忆保持率模拟（本地）
 ```
 
----
+实验结果摘要：5 类典型学习任务 × 10 次运行，**32 次工具调用 0 失败、任务完成 10/10**；
+SM-2 以约 1/4 的复习量达到每天全量复习 82% 的记忆保持率。详见
+[materials/05_实验报告.md](materials/05_实验报告.md)。
 
-## 目录职责总结
+## 目录结构
 
-| 目录 | 职责 | 关键文件 |
-|------|------|----------|
-| `frontend/src/api/` | 与后端通信 | `client.js`（统一拦截器） |
-| `frontend/src/features/` | 业务功能实现 | 各功能模块的 JSX |
-| `frontend/src/pages/` | 页面入口 | 路由对应的页面 |
-| `backend/app/core/` | 核心基础设施 | config、auth、errors |
-| `backend/app/modules/` | 业务模块 | 各模块的 CRUD |
-| `backend/app/schemas/` | 数据验证 | 请求/响应模型 |
-| `contracts/` | 接口规范 | `openapi.yaml` |
+```
+backend/            FastAPI 后端
+  app/agent/        Agent 核心：orchestrator / tools / schemas / prompts / memory
+  app/modules/      业务模块（笔记/记忆/费曼/思考/知识图谱/知识库…）
+  scripts/          运维脚本（seed_demo 演示环境初始化）
+  tests/            后端测试（94 个）
+frontend/           React + Vite 前端（AgentChat / ToolTrace）
+cli-agent/          CLI 学习导师扩展（基于自研 Agent 壳子）
+deploy/             服务器一键部署脚本
+experiments/        实验代码与结果
+materials/          PPT 素材包（提示词/工具清单/截图清单/实验报告）
+docs/               部署手册、评委体验指引、架构与历史文档
+```
 
----
+## 文档索引
 
-## 下一步
+| 文档 | 内容 |
+|------|------|
+| [docs/DEPLOY.md](docs/DEPLOY.md) | 公网演示环境部署手册（Nginx + systemd + 一键脚本） |
+| [docs/评审体验指引.md](docs/评审体验指引.md) | 1 页评委体验路径 |
+| [cli-agent/MUDEO.md](cli-agent/MUDEO.md) | CLI 端集成说明与架构 |
+| [docs/参赛准备与Agent化包装方案.md](docs/参赛准备与Agent化包装方案.md) | 参赛定位、材料清单与改造路线 |
+| [docs/平台功能说明.md](docs/平台功能说明.md) | 产品功能与开发手册（历史版 README） |
 
-- 阅读 [BUILD.md](./BUILD.md) 了解开发规范
-- 阅读 [docs/architecture/backend-overview.md](./docs/architecture/backend-overview.md) 了解后端架构
-- 阅读 [frontend/BACKEND_API_FOR_FRONTEND.md](./frontend/BACKEND_API_FOR_FRONTEND.md) 了解 API 接口
+## 合规与许可
+
+- 运行依赖均为开源组件（FastAPI / SQLAlchemy / React / Vite / Nginx 等），许可清晰
+- 演示数据为原创教学内容，不含第三方数据集，无版权与隐私风险
+- 提交材料须匿名（不含学校、姓名、Logo 等信息）
