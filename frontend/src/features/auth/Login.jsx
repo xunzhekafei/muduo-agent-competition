@@ -29,8 +29,8 @@ const Login = () => {
   };
 
   const handleDemoLogin = () => {
-    setEmail('student@example.com');
-    setPassword('muduo123456');
+    setEmail('demo@muduo.local');
+    setPassword('demo123456');
   };
 
   const handleOfflineDemo = () => {
